@@ -3,8 +3,7 @@
 版本：G1 确认稿  
 日期：2026-06-18  
 适用框架：Universal AI Delivery Framework（UAIDF）  
-项目基线：django-vue3-admin  
-上游地址：https://gitee.com/huge-dream/django-vue3-admin  
+项目基线：django-vue3-admin   
 移动端：UniApp，优先 App  
 Web 端：django-vue3-admin Vue3 管理端  
 文档定位：人类团队确认 + Codex/AI 执行合同
@@ -40,13 +39,11 @@ Web 端：django-vue3-admin Vue3 管理端
 
 ### 3.1 新项目基线
 
-本项目后续开发重新基于：
+本项目后续开发基于：
 
 ```text
-https://gitee.com/huge-dream/django-vue3-admin
+django-vue3-admin
 ```
-
-这不是把旧 Vue2 项目升级为 Vue3，也不是替换旧 Vue2 前端。旧项目中的需求、设计、接口、验收矩阵和报告只能作为参考资产；新基座上的实现、测试和验收证据必须重新生成。
 
 ### 3.2 允许的框架改造范围
 
@@ -100,7 +97,7 @@ Coffe Data Collection/
   web/
     src/views/coffee/
     src/api/coffee/
-  coffee-collector-app/
+  coffee-app/
   services/paddleocr/
   scripts/
   docker-compose.yml
@@ -138,7 +135,7 @@ P1 必须纳入一期，但可以排在 S3 后段或 S5 前完成。
 - 人工框选和标签版本。
 - 统计口径中心。
 - 完整数据包离线浏览索引。
-- 高德、聚合天气、OBS、华为 OCR 的配置、Mock、连接测试入口。
+- 高德、聚合天气、华为 OCR 的配置、Mock、连接测试入口。
 - 腾讯/百度地图 Provider 契约、启停、配置和可替换架构。
 - 更完整的绩效统计和导出筛选。
 
@@ -206,7 +203,7 @@ S6 交付、复盘、框架沉淀
 
 任务：
 
-1. 克隆并锁定 `django-vue3-admin` 上游提交。
+1. 锁定 `django-vue3-admin` 上游提交。
 2. 建立 UAIDF 治理文件。
 3. 建立 `automation/state.json`、`automation/acceptance.yaml`、`automation/runbook.md`。
 4. 明确 App 优先、Web 使用 Vue3 管理端、移动端使用 UniApp。
@@ -214,7 +211,7 @@ S6 交付、复盘、框架沉淀
 
 完成条件：
 
-- 上游提交已锁定。
+- 上游已锁定。
 - 本地基础环境可启动，或阻塞原因清晰。
 - 项目开始点明确。
 - 可以进入 G0。
@@ -223,11 +220,10 @@ S6 交付、复盘、框架沉淀
 
 确认事项：
 
-1. 接受重新基于 `django-vue3-admin`。
+1. 接受基于 `django-vue3-admin`。
 2. 接受移动端 UniApp，优先 App。
 3. 接受 Web 使用 django-vue3-admin Vue3 管理端。
-4. 接受旧项目只作为参考资产。
-5. 接受使用 UAIDF 管理阶段、门禁和证据。
+4. 接受使用 UAIDF 管理阶段、门禁和证据。
 
 G0 通过后进入 S1。
 
@@ -337,7 +333,7 @@ G3 通过后进入 S4。
 任务：
 
 1. 静态检查、单元测试、权限测试、集成测试、E2E 和安全检查。
-2. 使用 Mock Provider 验证地图、天气、OCR、OBS 契约。
+2. 使用 Mock Provider 验证地图、天气、OCR 契约。
 3. 验证图片、分片续传、Manifest、Hash、导出。
 4. 输出真实服务配置清单。
 5. 输出部署和回滚说明。
@@ -368,11 +364,10 @@ G4 通过后进入 S5。
 
 1. 高德地图真实调用回归。
 2. 聚合天气真实调用回归。
-3. 华为 OBS 手动测试。
-4. 华为 OCR 手动测试。
-5. PaddleOCR 真实设备样本测试。
-6. Android/iOS 真机测试。
-7. Web/API/PaddleOCR 真实环境登录和操作验证。
+3. 华为 OCR 手动测试。
+4. PaddleOCR 真实设备样本测试。
+5. Android/iOS 真机测试。
+6. Web/API/PaddleOCR 真实环境登录和操作验证。
 
 完成条件：
 
@@ -430,7 +425,7 @@ G5 通过后进入 S6。
 - 上传队列。
 - 断网恢复。
 - OCR 结果查看。
-- 人工校正。
+- 人工校正(识别结果自动填写到对应输入框，人工校正)。
 - 质检退回修改。
 - 我的记录和详情。
 
@@ -494,7 +489,6 @@ Provider 必须隔离外部厂商：
 - 地图：高德，后续可扩展腾讯/百度。
 - 天气：聚合天气。
 - OCR：PaddleOCR、华为 OCR、人工录入。
-- 存储：本地存储、华为 OBS。
 
 业务模型不能直接依赖厂商返回结构。
 
@@ -564,7 +558,6 @@ G2 前必须完成：
 
 - 缺少高德地图真实 Key。
 - 缺少聚合天气真实 Key。
-- 缺少华为 OBS AK/SK、Bucket、Endpoint、Region。
 - 缺少华为 OCR 服务开通状态和真实配置。
 - 缺少 Android/iOS 真机。
 - 缺少真实设备图片样本集。
@@ -597,7 +590,7 @@ G2 前必须完成：
 
 第一轮不直接进入开发，应执行：
 
-1. 克隆并锁定 `django-vue3-admin`。
+1. 锁定 `django-vue3-admin`。
 2. 生成 UAIDF 项目治理文件。
 3. 登记本任务书为 G1 输入。
 4. 生成 `automation/acceptance.yaml` 初版。
@@ -621,7 +614,7 @@ G2 前必须完成：
 ```text
 你是 Codex，请在 UAIDF 通用 AI 开发框架约束下，开发“普洱咖啡数据采集系统”。
 
-项目重新基于 https://gitee.com/huge-dream/django-vue3-admin 开发，不是从旧 Vue2 项目升级。
+项目基于 django-vue3-admin 开发。
 移动端使用 UniApp，优先 App。
 Web 使用 django-vue3-admin 的 Vue3 管理端。
 本任务书同时面向人类团队确认和 Codex 执行。

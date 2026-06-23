@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>G2 Key Flows - 普洱咖啡数据采集系统</title>
+  <style>
+    body { margin: 0; font-family: Arial, "PingFang SC", sans-serif; background: #f6f7f9; color: #1f2933; }
+    header { padding: 24px 32px; background: #1f4f46; color: white; }
+    main { padding: 24px 32px; display: grid; gap: 24px; }
+    section { background: white; border: 1px solid #d9dee7; border-radius: 8px; padding: 20px; }
+    h1, h2 { margin: 0 0 14px; }
+    .flow { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .step { border: 1px solid #9fb3ac; background: #eef7f4; padding: 10px 12px; border-radius: 6px; min-width: 112px; text-align: center; }
+    .arrow { color: #637381; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .card { border: 1px solid #d9dee7; border-radius: 8px; padding: 14px; background: #fbfcfd; }
+    .phone { width: 280px; border: 2px solid #1f2933; border-radius: 24px; padding: 14px; background: #ffffff; }
+    .bar { height: 12px; background: #dbe7e3; border-radius: 6px; margin: 8px 0; }
+    .button { display: inline-block; padding: 8px 12px; background: #1f4f46; color: white; border-radius: 6px; margin-top: 8px; }
+    .muted { color: #637381; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>普洱咖啡数据采集系统 G2 低保真原型</h1>
+    <div>用于确认关键页面、状态流转和 App 优先闭环，不是业务实现。</div>
+  </header>
+  <main>
+    <section>
+      <h2>App 第一条闭环</h2>
+      <div class="flow">
+        <div class="step">登录</div><div class="arrow">-></div>
+        <div class="step">任务</div><div class="arrow">-></div>
+        <div class="step">地块/点位</div><div class="arrow">-></div>
+        <div class="step">创建事件</div><div class="arrow">-></div>
+        <div class="step">拍照</div><div class="arrow">-></div>
+        <div class="step">草稿</div><div class="arrow">-></div>
+        <div class="step">上传</div><div class="arrow">-></div>
+        <div class="step">OCR 校正</div><div class="arrow">-></div>
+        <div class="step">提交</div><div class="arrow">-></div>
+        <div class="step">Web 审核</div>
+      </div>
+    </section>
+    <section>
+      <h2>App 关键页面骨架</h2>
+      <div class="grid">
+        <div class="phone">
+          <strong>任务首页</strong>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <span class="button">同步任务</span>
+          <p class="muted">展示任务、进度、退回数、离线包。</p>
+        </div>
+        <div class="phone">
+          <strong>分类拍照</strong>
+          <div class="bar"></div><div class="bar"></div>
+          <span class="button">拍照</span>
+          <p class="muted">分类、水印、metadata、预检。</p>
+        </div>
+        <div class="phone">
+          <strong>上传队列</strong>
+          <div class="bar"></div><div class="bar"></div>
+          <span class="button">重试</span>
+          <p class="muted">分片、断点续传、弱网暂停。</p>
+        </div>
+      </div>
+    </section>
+    <section>
+      <h2>Web 管理端布局</h2>
+      <div class="grid">
+        <div class="card"><strong>左侧菜单</strong><p>咖啡采集、质检审核、OCR 与 Provider、统计导出、系统配置。</p></div>
+        <div class="card"><strong>表格列表</strong><p>筛选、工具栏、批量操作、状态标签、详情抽屉。</p></div>
+        <div class="card"><strong>审核详情</strong><p>基础信息、照片、OCR、测量、质检、审计日志。</p></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

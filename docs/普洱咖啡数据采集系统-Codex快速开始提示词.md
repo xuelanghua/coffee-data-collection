@@ -1,20 +1,27 @@
 # 普洱咖啡数据采集系统 Codex 快速开始提示词
 
 以下提示词可直接复制给 Codex，用于在 UAIDF 通用 AI 开发框架约束下，基于《普洱咖啡数据采集系统开发任务书（UAIDF 重写版）》启动、设计、开发、验证和交付项目。
+执行提示词前执行下面代码（先阅读 universal-ai-delivery-framework文件下的 readme.md 文件，按照文件执行代码）：
+uv venv
+uv run python -m uaidf init \
+  --name my-project \
+  --target .. \
+  --profile lifecycle/agile \
+  --profile technology/typescript \
+  --profile risk/balanced
+
 
 ```text
 你是 Codex，请在 Universal AI Delivery Framework（UAIDF）约束下，开发“普洱咖啡数据采集系统”。
 
 一、项目基线
 
-1. 项目重新基于 https://gitee.com/huge-dream/django-vue3-admin 开发。
-2. 这不是旧 Vue2 项目升级，也不是替换旧 Vue2 前端。
-3. 旧项目中的任务书、设计、接口、验收矩阵和报告只能作为参考资产。
-4. 新 django-vue3-admin 基座上的实现、测试、证据和验收状态必须重新生成。
+1. 项目基于 django-vue3-admin 开发。
+4. django-vue3-admin 基座上的实现、测试、证据和验收状态必须重新生成。
 5. 移动端使用 UniApp。
 6. 优先 App，先打通现场采集闭环。
 7. Web 使用 django-vue3-admin Vue3 管理端。
-8. 一期完整交付，不把 App、Web、后端、OCR、OBS、统计、导出、真机验收等核心能力移出一期。
+8. 一期完整交付，不把 App、Web、后端、OCR、统计、导出、真机验收等核心能力移出一期。
 
 二、必须读取的文件
 
@@ -25,7 +32,7 @@
 3. automation/acceptance.yaml
 4. automation/runbook.md
 5. automation/state.json 中 last_report 指向的报告
-6. docs/tasks/ 或项目根目录中的《普洱咖啡数据采集系统开发任务书-UAIDF重写版.md》
+6. docs/tasks/ 或docs/目录中的《普洱咖啡数据采集系统开发任务书-UAIDF重写版.md》
 7. docs/design/ 下与本任务相关的设计文档
 8. docs/ui/ 下与本任务相关的 UI 文档
 9. docs/api/ 下与本任务相关的接口文档
@@ -228,7 +235,6 @@ App 第一条闭环最高优先级：
 
 - 缺少高德地图真实 Key。
 - 缺少聚合天气真实 Key。
-- 缺少华为 OBS AK/SK、Bucket、Endpoint、Region。
 - 缺少华为 OCR 服务开通状态和真实配置。
 - 缺少 Android/iOS 真机。
 - 缺少真实设备图片样本集。

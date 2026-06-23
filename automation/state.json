@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "current_stage": "S2",
+  "stage_status": "IN_PROGRESS",
+  "confirmed_gates": [
+    "G0",
+    "G1"
+  ],
+  "completed_requirements": [
+    "G0",
+    "G1"
+  ],
+  "blocked_items": [],
+  "last_verification_at": "2026-06-23T09:11:12.536128+00:00",
+  "last_report": "reports/gates/G2-design-input.md",
+  "next_action": "review S2 design documents and wait for user to confirm G2 before business implementation"
+}

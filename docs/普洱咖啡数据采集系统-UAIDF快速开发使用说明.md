@@ -5,16 +5,13 @@
 对应任务书：
 
 ```text
-/Users/xuelang/Documents/Code/Coffe Data Collection/普洱咖啡数据采集系统开发任务书-UAIDF重写版.md
+/Users/xuelang/Documents/Code/Coffee Data Collection/普洱咖啡数据采集系统开发任务书-UAIDF重写版.md
 ```
 
 ## 1. 核心结论
+开发口径统一为：
 
-本项目不是旧 Vue2 项目升级，也不是替换旧 Vue2 前端。
-
-后续开发口径统一为：
-
-- 新项目基线：`https://gitee.com/huge-dream/django-vue3-admin`
+- 新项目基线：`django-vue3-admin`
 - 移动端：UniApp
 - 优先级：App 优先
 - Web 端：django-vue3-admin Vue3 管理端
@@ -23,7 +20,7 @@
 - 框架改造：允许小范围受控改造，必须有 ADR、测试和回滚说明
 - 验收方式：证据驱动，状态只允许 `PASS`、`FAIL`、`BLOCKED`、`NOT_VERIFIED`
 
-旧项目中的任务书、设计、接口经验、验收矩阵和报告只作为参考资产。新 `django-vue3-admin` 基座上的代码、测试、证据和验收状态必须重新生成。
+`django-vue3-admin` 基座上的代码、测试、证据和验收状态必须重新生成。
 
 ## 2. 项目开始点
 
@@ -109,7 +106,7 @@ Coffe Data Collection/
   web/
     src/views/coffee/
     src/api/coffee/
-  coffee-collector-app/
+  coffee-app/
   services/paddleocr/
   scripts/
   docker-compose.yml
@@ -121,7 +118,7 @@ Coffe Data Collection/
 
 Codex 要做：
 
-1. 确认目标目录是否已经克隆 `django-vue3-admin`。
+1. 确认目标目录已经锁定 `django-vue3-admin`。
 2. 锁定上游提交，写入 `automation/framework-lock.yaml` 或阶段报告。
 3. 建立 UAIDF 治理文件。
 4. 建立 `automation/state.json`、`automation/acceptance.yaml`、`automation/runbook.md`。
@@ -141,7 +138,6 @@ Codex 要做：
 - 接受重新基于 `django-vue3-admin`。
 - 接受移动端 UniApp，App 优先。
 - 接受 Web 使用 django-vue3-admin Vue3 管理端。
-- 接受旧项目只作为参考资产。
 - 接受使用 UAIDF 管理阶段、门禁和证据。
 
 ### 5.3 S1 需求澄清与任务书确认
@@ -341,7 +337,6 @@ Provider 必须隔离外部厂商：
 - 地图：高德，后续可扩展腾讯/百度。
 - 天气：聚合天气。
 - OCR：PaddleOCR、华为 OCR、人工录入。
-- 存储：本地存储、华为 OBS。
 
 业务模型不能直接依赖厂商返回结构。
 
@@ -411,7 +406,6 @@ reports/release/框架改造回滚说明.md
 
 - 缺少高德地图真实 Key。
 - 缺少聚合天气真实 Key。
-- 缺少华为 OBS AK/SK、Bucket、Endpoint、Region。
 - 缺少华为 OCR 服务开通状态和真实配置。
 - 缺少 Android/iOS 真机。
 - 缺少真实设备图片样本集。
@@ -490,8 +484,8 @@ scripts/verify-all.sh
 ## 14. 最小启动口令
 
 ```text
-请读取当前项目 AGENTS.md、automation/state.json、automation/acceptance.yaml、automation/runbook.md、last_report 和《普洱咖啡数据采集系统开发任务书-UAIDF重写版.md》。
-本项目重新基于 https://gitee.com/huge-dream/django-vue3-admin 开发，不是旧 Vue2 项目升级。
+请读取当前项目 AGENTS.md、automation/state.json、automation/acceptance.yaml、automation/runbook.md、last_report 和docs/《普洱咖啡数据采集系统开发任务书-UAIDF重写版.md》。
+本项目基于 django-vue3-admin 开发。
 移动端使用 UniApp，优先 App；Web 使用 django-vue3-admin Vue3 管理端。
 请先判断当前处于 S0-S6 的哪个阶段、G0-G6 哪些门禁已确认。
 G1 未确认前不要进入 S2；G2 未确认前不要写业务代码。

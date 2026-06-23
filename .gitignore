@@ -1,6 +1,7 @@
 /backend/venv
 /backend/.idea
 .idea
+.DS_Store
 
 .history/
 .vscode/
@@ -19,3 +20,15 @@ docs/superpowers/
 /backend/conf/env.py
 /web/node_modules/
 /web/dist/
+
+# agent files
+universal-ai-delivery-framework/
+AGENTS.md
+# /automation/
+/checkpoints/
+/reports/
+/evidence/
+
+#handbook
+docs/*.md
+!docs/普洱咖啡数据采集系统开发任务书-UAIDF重新版.md

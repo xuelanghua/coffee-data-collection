@@ -1,0 +1,270 @@
+schema_version: 1
+requirements:
+  - id: G0-BASELINE
+    priority: P0
+    title: G0 立项和技术基线确认
+    status: PASS
+    implementation: project.yaml; automation/state.json
+    verification: 用户在对话中确认 G0，UAIDF transition G0 通过。
+    evidence:
+      - evidence/audit.jsonl
+      - reports/gates/G1-input.md
+
+  - id: S1-RUNBOOK
+    priority: P0
+    title: S1 启动与恢复 runbook
+    status: PASS
+    implementation: automation/runbook.md
+    verification: 人工检查 runbook 覆盖启动文件、门禁、证据、恢复和验证命令。
+    evidence:
+      - automation/runbook.md
+
+  - id: S1-G1-SCOPE
+    priority: P0
+    title: G1 一期范围、P0/P1 和非目标确认
+    status: PASS
+    implementation: docs/普洱咖啡数据采集系统开发任务书-UAIDF重写版.md
+    verification: 用户在对话中明确确认 G1。
+    evidence:
+      - reports/gates/G2-design-input.md
+
+  - id: S1-APP-FIRST
+    priority: P0
+    title: App 优先、UniApp 移动端和现场采集闭环
+    status: PASS
+    implementation: docs/普洱咖啡数据采集系统开发任务书-UAIDF重写版.md
+    verification: 用户在 G1 中确认 App 优先和 UniApp 移动端。
+    evidence:
+      - reports/gates/G2-design-input.md
+
+  - id: S1-WEB-BASELINE
+    priority: P0
+    title: django-vue3-admin Vue3 Web 管理端基线
+    status: PASS
+    implementation: docs/普洱咖啡数据采集系统开发任务书-UAIDF重写版.md; web/
+    verification: 用户在 G1 中确认 django-vue3-admin Vue3 管理端。
+    evidence:
+      - reports/gates/G2-design-input.md
+
+  - id: S1-CONTROLLED-FRAMEWORK-CHANGES
+    priority: P0
+    title: 允许小范围受控 django-vue3-admin 改造
+    status: PASS
+    implementation: docs/普洱咖啡数据采集系统开发任务书-UAIDF重写版.md
+    verification: 用户在 G1 中确认允许小范围受控框架改造。
+    evidence:
+      - reports/gates/G2-design-input.md
+
+  - id: S1-EVIDENCE-BASED-ACCEPTANCE
+    priority: P0
+    title: 验收必须基于证据且状态受限
+    status: PASS
+    implementation: automation/acceptance.yaml; automation/runbook.md
+    verification: 用户在 G1 中确认验收必须基于证据。
+    evidence:
+      - reports/gates/G2-design-input.md
+
+  - id: S2-UI-DESIGN-GATE
+    priority: P0
+    title: UI 由系统自动设计并经用户确认后开发
+    status: PASS
+    implementation: docs/ui/UI设计总说明.md; docs/ui/App页面设计说明.md; docs/ui/Web管理端页面设计说明.md; docs/ui/字段与按钮清单.md; docs/ui/状态与异常流程.md; docs/ui/设计确认清单.md; docs/prototypes/g2-key-flows.html
+    verification: 已输出 App/Web 页面、字段、按钮、权限、状态、异常流程和低保真原型；等待用户确认 G2。
+    evidence:
+      - docs/ui/UI设计总说明.md
+      - docs/ui/App页面设计说明.md
+      - docs/ui/Web管理端页面设计说明.md
+      - docs/ui/字段与按钮清单.md
+      - docs/ui/状态与异常流程.md
+      - docs/ui/设计确认清单.md
+      - docs/prototypes/g2-key-flows.html
+
+  - id: S2-ARCHITECTURE-DATABASE-API
+    priority: P0
+    title: 架构、数据库、API 和 Provider 契约设计
+    status: PASS
+    implementation: docs/design/系统架构设计.md; docs/design/数据库设计.md; docs/api/API契约说明.md; docs/design/Provider契约说明.md; docs/design/测试方案.md; docs/design/采集上传质检导出方案.md
+    verification: 已输出系统架构、数据库设计、API 契约、Provider 契约、采集上传质检导出方案和测试方案；等待用户确认 G2。
+    evidence:
+      - docs/design/系统架构设计.md
+      - docs/design/数据库设计.md
+      - docs/api/API契约说明.md
+      - docs/design/Provider契约说明.md
+      - docs/design/采集上传质检导出方案.md
+      - docs/design/测试方案.md
+
+  - id: P0-IDENTITY-PERMISSIONS
+    priority: P0
+    title: App/Web 共用用户、组织、角色和权限
+    status: NOT_VERIFIED
+    implementation: backend/apps/coffee/ 待开发; web/src/views/coffee/ 待开发; coffee-collector-app/ 待开发
+    verification: 自动权限测试和人工角色矩阵测试。
+    evidence: []
+
+  - id: P0-PHONE-PASSWORD-LOGIN
+    priority: P0
+    title: 手机号和密码登录
+    status: NOT_VERIFIED
+    implementation: 后端认证和 UniApp 登录页待开发
+    verification: API 登录测试、App 登录人工测试、Web 登录回归。
+    evidence: []
+
+  - id: P0-ROLE-MATRIX
+    priority: P0
+    title: 采集员、审核员、管理员、查看员角色权限
+    status: NOT_VERIFIED
+    implementation: 后端权限、Web 菜单、App 可见性待开发
+    verification: 权限自动测试和人工可见性测试。
+    evidence: []
+
+  - id: P0-ID-HIERARCHY
+    priority: P0
+    title: 先编号后采集和 Plot_ID、Point_ID、Event_ID、Photo_ID 四级主键
+    status: NOT_VERIFIED
+    implementation: 数据库模型和编号服务待开发
+    verification: 领域规则测试、API 幂等测试。
+    evidence: []
+
+  - id: P0-COLLECTION-DOMAIN
+    priority: P0
+    title: 地块、采样点、采集事件、照片资产关系
+    status: NOT_VERIFIED
+    implementation: backend/apps/coffee/ 待开发
+    verification: 模型测试、API 测试、Web/App 人工流程测试。
+    evidence: []
+
+  - id: P0-LOCATION-PLOT-BOUNDARY
+    priority: P0
+    title: 定位、手动选点、地块边界和面积复核
+    status: NOT_VERIFIED
+    implementation: App 地图采集、Provider 契约、后端地理模型待开发
+    verification: Mock 地图测试；真实高德 Key 缺失时真实验证 BLOCKED。
+    evidence: []
+
+  - id: P0-PHOTO-WATERMARK-METADATA
+    priority: P0
+    title: 分类拍照、水印、不可变原图、metadata 和图片预检
+    status: NOT_VERIFIED
+    implementation: App 拍照、后端图片资产、对象存储适配待开发
+    verification: 图片处理单测、App 人工测试、原图不可变审计检查。
+    evidence: []
+
+  - id: P0-OFFLINE-UPLOAD-MANIFEST
+    priority: P0
+    title: 离线草稿、上传队列、断点续传、分片上传、幂等提交和 Manifest
+    status: NOT_VERIFIED
+    implementation: coffee-collector-app/ 待开发; backend/apps/coffee/ 待开发
+    verification: App 单测、上传 API 测试、弱网人工测试。
+    evidence: []
+
+  - id: P0-MEASUREMENT-RETAKE
+    priority: P0
+    title: 设备测量、异常复测和全部记录留存
+    status: NOT_VERIFIED
+    implementation: 采集事件和测量记录模型待开发
+    verification: 领域规则测试、复测流程人工测试。
+    evidence: []
+
+  - id: P0-OCR-PROVIDERS
+    priority: P0
+    title: PaddleOCR、华为 OCR、人工录入 Provider 契约
+    status: NOT_VERIFIED
+    implementation: docs/design/Provider契约说明.md 待创建; services/paddleocr/ 待开发
+    verification: Provider Mock 测试、PaddleOCR 服务测试；华为真实配置缺失时 BLOCKED。
+    evidence: []
+
+  - id: P0-OCR-AUDIT-CORRECTION
+    priority: P0
+    title: OCR 原始响应、置信度、人工修正、调用日志和审计
+    status: NOT_VERIFIED
+    implementation: OCR 结果、修正和调用日志模型待开发
+    verification: API 测试、审计日志检查、人工校正流程测试。
+    evidence: []
+
+  - id: P0-QA-RETURN-REVIEW
+    priority: P0
+    title: 图片和数据包质检、退回复核
+    status: NOT_VERIFIED
+    implementation: 质检模型、Web 审核页、App 退回修改待开发
+    verification: 状态流转测试、Web/App 人工测试。
+    evidence: []
+
+  - id: P0-B-GRADE-RULE
+    priority: P0
+    title: B 级数量规则
+    status: NOT_VERIFIED
+    implementation: 领域规则服务待开发
+    verification: 领域规则单元测试。
+    evidence: []
+
+  - id: P0-WEB-MANAGEMENT
+    priority: P0
+    title: Web 业务菜单、列表、图片审核、OCR 校正、配置、统计、绩效和导出
+    status: NOT_VERIFIED
+    implementation: web/src/views/coffee/ 待开发; web/src/api/coffee/ 待开发
+    verification: Web lint/build、页面人工测试、导出任务测试。
+    evidence: []
+
+  - id: P0-INFRA-COMPOSE
+    priority: P0
+    title: MySQL 8、Redis、Celery、PaddleOCR、健康检查和持久化 Compose
+    status: NOT_VERIFIED
+    implementation: docker-compose.yml 待扩展; services/paddleocr/ 待开发
+    verification: Docker Compose 启动测试、健康检查测试；生产环境缺失时真实部署 BLOCKED。
+    evidence: []
+
+  - id: P0-AUTOMATED-TESTS-DELIVERY
+    priority: P0
+    title: 自动测试、安全检查、真实服务配置门禁和交付文档
+    status: NOT_VERIFIED
+    implementation: scripts/ 待开发; docs/ 待补齐; reports/ 待补齐
+    verification: scripts/verify-all.sh、本地测试报告、安全检查报告。
+    evidence: []
+
+  - id: P1-ANNOTATION-VERSIONING
+    priority: P1
+    title: 人工框选和标签版本
+    status: NOT_VERIFIED
+    implementation: 标注模型和 Web 标注页待开发
+    verification: 标注版本测试、人工标注流程测试。
+    evidence: []
+
+  - id: P1-METRIC-CENTER
+    priority: P1
+    title: 统计口径中心
+    status: NOT_VERIFIED
+    implementation: 统计配置和报表服务待开发
+    verification: 指标口径单测、报表人工核对。
+    evidence: []
+
+  - id: P1-OFFLINE-PACKAGE-INDEX
+    priority: P1
+    title: 完整数据包离线浏览索引
+    status: NOT_VERIFIED
+    implementation: 导出包索引和离线浏览元数据待开发
+    verification: 导出包结构测试、离线浏览人工测试。
+    evidence: []
+
+  - id: P1-REAL-PROVIDER-CONFIG
+    priority: P1
+    title: 高德、聚合天气、华为 OCR 配置、Mock 和连接测试入口
+    status: NOT_VERIFIED
+    implementation: Provider 配置页和后端连接测试待开发
+    verification: Mock 连接测试；缺真实 Key 时真实验证 BLOCKED。
+    evidence: []
+
+  - id: P1-ALT-MAP-PROVIDERS
+    priority: P1
+    title: 腾讯和百度地图 Provider 可替换架构
+    status: NOT_VERIFIED
+    implementation: Provider 契约待设计，适配器待开发
+    verification: 契约测试和启停配置测试。
+    evidence: []
+
+  - id: P1-ADVANCED-PERFORMANCE-EXPORT
+    priority: P1
+    title: 更完整的绩效统计和导出筛选
+    status: NOT_VERIFIED
+    implementation: Web 绩效页和导出任务待开发
+    verification: 统计口径测试、导出筛选测试。
+    evidence: []

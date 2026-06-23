@@ -1,0 +1,8 @@
+schema_version: 1
+framework:
+  version: 0.1.0
+  channel: stable
+  profiles:
+  - lifecycle/agile
+  - technology/django-vue
+  - risk/balanced
