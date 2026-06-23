@@ -1,24 +1,8 @@
-# Django-Vue3-Admin
-
-[![img](https://img.shields.io/badge/license-MIT-blue.svg)](https://gitee.com/liqianglog/django-vue-admin/blob/master/LICENSE)  [![img](https://img.shields.io/badge/python-%3E=3.7.x-green.svg)](https://python.org/)  [![PyPI - Django Version badge](https://img.shields.io/badge/django%20versions-3.2-blue)](https://docs.djangoproject.com/zh-hans/3.2/) [![img](https://img.shields.io/badge/node-%3E%3D%2012.0.0-brightgreen)](https://nodejs.org/zh-cn/) [![img](https://gitee.com/liqianglog/django-vue-admin/badge/star.svg?theme=dark)](https://gitee.com/liqianglog/django-vue-admin)
-
-[预 览](https://demo.dvadmin.com) | [官网文档](https://www.django-vue-admin.com) | [群聊](https://qm.qq.com/cgi-bin/qm/qr?k=fOdnHhC8DJlRHGYSnyhoB8P5rgogA6Vs&jump_from=webapi) | [社区](https://bbs.django-vue-admin.com) | [插件市场](https://bbs.django-vue-admin.com/plugMarket.html) | [Github](https://github.com/liqianglog/django-vue-admin)
-
-
-
-💡 **「关于」**
-
-我们是一群热爱代码的青年，在这个炙热的时代下，我们希望静下心来通过Code带来一点我们的色彩和颜色。
-
-因为热爱，所以拥抱未来!
-
-
+# Coffee Data Collection
 ## 平台简介
 
-💡 [django-vue3-admin](https://gitee.com/huge-dream/django-vue3-admin.git) 是一套全部开源的快速开发平台，毫无保留给个人免费使用、团体授权使用。
-    django-vue3-admin 基于RBAC模型的权限控制的一整套基础开发平台，权限粒度达到列级别，前后端分离，后端采用django + django-rest-framework，前端采用基于 vue3 + CompositionAPI + typescript + vite + element plus
-
-
+💡 [Coffee-Data-Collection] 
+    Coffee Data Collection 基于 Django Vue3 Admin进行开发 
 
 
 * 🧑‍🤝‍🧑前端采用 Vue3+TS+pinia+fastcrud(感谢[vue-next-admin](https://lyt-top.gitee.io/vue-next-admin-doc-preview/))
@@ -38,46 +22,7 @@
 > 由于 Vue3 不再支持 IE11，故而 ElementPlus 也不支持 IE11 及之前版本。
 
 
-
-## 在线体验
-
-👩‍👧‍👦演示地址：[https://demo.dvadmin.com](https://demo.dvadmin.com)
-
-- 账号：superadmin
-
-- 密码：admin123456
-
-👩‍👦‍👦文档地址：[DVAdmin官网](https://www.django-vue-admin.com)
-
-
-
-## 交流
-
-- 交流社区：[戳我](https://bbs.django-vue-admin.com)👩‍👦‍👦
-- 插件市场：[戳我](https://bbs.django-vue-admin.com/plugMarket.html)👩‍👦‍👦
--  django-vue-admin交流01群(已满)：812482043 [点击链接加入群聊](https://qm.qq.com/cgi-bin/qm/qr?k=aJVwjDvH-Es4MPJQuoO32N0SucK22TE5&jump_from=webapi)
--  django-vue-admin交流02群(已满)：687252418  [点击链接加入群聊](https://qm.qq.com/cgi-bin/qm/qr?k=4jJN4IjWGfxJ8YJXbb_gTsuWjR34WLdc&jump_from=webapi)
-- django-vue-admin交流03群(已满)：442108213  [点击链接加入群聊](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=wsm5oSz3K8dElBYUDtLTcQSEPhINFkl8&authKey=M6sbER0z59ZakgBr5erFeZyFZU15CI52bErNZa%2FxSvvGIuVAbY0N5866v89hm%2FK4&noverify=0&group_code=442108213)
-- django-vue-admin交流04群(已满)：442108213  [点击链接加入群聊](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=wsm5oSz3K8dElBYUDtLTcQSEPhINFkl8&authKey=M6sbER0z59ZakgBr5erFeZyFZU15CI52bErNZa%2FxSvvGIuVAbY0N5866v89hm%2FK4&noverify=0&group_code=442108213)
--  django-vue-admin交流05群(最新)：557302068 [点击链接加入群聊](https://qm.qq.com/q/fyIejYStQ6)
-
-
-## 给框架点赞
-
-<div style="display: flex; gap: 10px;">
- <img src='https://django-vue-admin.com/alipay.jpg' width='200'>
- <img src='https://django-vue-admin.com/wechat.jpg' width='200'>
-</div>
-
-
-## 源码地址
-
-gitee地址(主推)：[https://gitee.com/huge-dream/django-vue3-admin](https://gitee.com/huge-dream/django-vue3-admin)👩‍👦‍👦
-
-github地址：[https://github.com/huge-dream/django-vue3-admin](https://github.com/huge-dream/django-vue3-admin)👩‍👦‍👦
-
-
-## 内置功能
+## 功能清单
 
 1.  👨‍⚕️菜单管理：配置系统菜单，操作权限，按钮权限标识、后端接口权限等。
 2.  🧑‍⚕️部门管理：配置系统组织机构（公司、部门、角色）。
@@ -202,44 +147,5 @@ docker-compose restart
 #  docker-compose 启动时重新进行 build
 docker-compose up -d --build
 ~~~
-
-
-
-## 演示图✅
-
-![image-01](https://foruda.gitee.com/images/1701348994587355489/1bc749e7_5074988.png)
-
-![image-02](https://foruda.gitee.com/images/1701349037811908960/80d361db_5074988.png)
-
-![image-03](https://foruda.gitee.com/images/1701349224478845203/954f0a7b_5074988.png)
-
-![image-04](https://foruda.gitee.com/images/1701349248928658877/64926724_5074988.png)
-
-![image-05](https://foruda.gitee.com/images/1701349259068943299/1306ba40_5074988.png)
-
-![image-06](https://foruda.gitee.com/images/1701349294894429495/e3b3a8cf_5074988.png)
-
-![image-07](https://foruda.gitee.com/images/1701350432536247561/3b26685e_5074988.png)
-
-![image-08](https://foruda.gitee.com/images/1701350455264771992/b364c57f_5074988.png)
-
-![image-09](https://foruda.gitee.com/images/1701350479266000753/e4e4f7c5_5074988.png)
-
-![image-10](https://foruda.gitee.com/images/1701350501421625746/f8dd215e_5074988.png)
-
-## 审批流插件
-
-![输入链接说明](https://bbs.django-vue-admin.com/uploads/20250321/97fbbf29673edfd66a1edd49237791bb.png)
-
-![输入链接说明](https://bbs.django-vue-admin.com/uploads/20250321/c43aa51278cbc478287c718d22397479.png)
-
-
-![输入链接说明](https://bbs.django-vue-admin.com/uploads/20250321/9732a5cca9c1166d1a65c35e313ab90d.png)
-
-
-![输入链接说明](https://bbs.django-vue-admin.com/uploads/20250321/3ca9dd0801ce76d21435abcc8a3d505a.png)
-
-![输入链接说明](https://bbs.django-vue-admin.com/uploads/20250321/a87a8d2329ef66880af5b0f16c5ff823.png)
-
 
 

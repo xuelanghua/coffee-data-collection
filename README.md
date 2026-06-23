@@ -1,14 +1,8 @@
-# Django-Vue3-Admin
-
-[![img](https://img.shields.io/badge/license-MIT-blue.svg)](https://gitee.com/huge-dream/django-vue3-admin/blob/master/LICENSE)  [![img](https://img.shields.io/badge/python-%3E=3.7.x-green.svg)](https://python.org/)  [![PyPI - Django Version badge](https://img.shields.io/badge/django%20versions-3.2-blue)](https://docs.djangoproject.com/zh-hans/3.2/) [![img](https://img.shields.io/badge/node-%3E%3D%2012.0.0-brightgreen)](https://nodejs.org/zh-cn/) [![img](https://gitee.com/huge-dream/django-vue3-admin/badge/star.svg?theme=dark)](https://gitee.com/huge-dream/django-vue3-admin)
-
-[preview](https://demo.dvadmin.com) | [Official website document](https://www.django-vue-admin.com) | [qq group](https://qm.qq.com/cgi-bin/qm/qr?k=fOdnHhC8DJlRHGYSnyhoB8P5rgogA6Vs&jump_from=webapi) | [community](https://bbs.django-vue-admin.com) | [plugins market](https://bbs.django-vue-admin.com/plugMarket.html) | [Github](https://github.com/liqianglog/django-vue-admin)
+# Coffee-Data-Collection
 
 💡 **「About」**
 
-It is a completely open-source rapid development platform, provided free for personal use and authorized for group use.
-Django-Vue3-Admin is a comprehensive basic development platform based on the RBAC (Role-Based Access Control) model for permission control, with column-level granularity. It follows a frontend-backend separation architecture, with Django and Django Rest Framework used for the backend, and Vue3, Composition API, TypeScript, Vite, and Element Plus used for the frontend.
-
+Coffee Data Collection is based on Django Vue3 Admin
 
 ## framework introduction
 

@@ -15,6 +15,10 @@ import sys
 from pathlib import Path
 from datetime import timedelta
 
+# 解决 mysqlclient 安装失败问题，仅测试环境下进行，正式环境必须安装
+import pymysql
+pymysql.install_as_MySQLdb()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

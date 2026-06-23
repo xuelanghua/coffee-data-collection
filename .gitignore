@@ -17,3 +17,5 @@ docs/superpowers/
 # Local configuration files (not tracked in git)
 /backend/application/settings.py
 /backend/conf/env.py
+/web/node_modules/
+/web/dist/
