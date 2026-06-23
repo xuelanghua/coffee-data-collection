@@ -1,7 +1,7 @@
 # 普洱咖啡数据采集系统 Codex 快速开始提示词
 
 以下提示词可直接复制给 Codex，用于在 UAIDF 通用 AI 开发框架约束下，基于《普洱咖啡数据采集系统开发任务书（UAIDF 重写版）》启动、设计、开发、验证和交付项目。
-执行提示词前执行下面代码（先阅读 universal-ai-delivery-framework文件下的 readme.md 文件，按照文件执行代码）：
+执行提示词前执行下面代码（先阅读 universal-ai-delivery-framework文件下的 README.MD 文件，按照文件执行代码）：
 uv venv
 uv run python -m uaidf init \
   --name my-project \
