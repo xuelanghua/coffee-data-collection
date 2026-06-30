@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "channels",
     "dvadmin.system",
     "dvadmin.test_app",
+    "apps.coffee",
 ]
 
 MIDDLEWARE = [
@@ -115,6 +116,14 @@ DATABASES = {
         "PORT": DATABASE_PORT,
     }
 }
+
+if os.environ.get("DATABASE_TYPE", "").upper() == "SQLITE3":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        }
+    }
 
 # Enable SQLite WAL mode and busy timeout for concurrent Playwright test execution.
 # WAL mode allows concurrent reads during writes; busy_timeout lets writers wait up to

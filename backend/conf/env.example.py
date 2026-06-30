@@ -48,3 +48,15 @@ LOGIN_NO_CAPTCHA_AUTH = True
 ALLOWED_HOSTS = ["*"]
 # 列权限中排除App应用
 COLUMN_EXCLUDE_APPS = []
+
+# ================================================= #
+# ************* coffee真实Provider配置 ************* #
+# ================================================= #
+# 本地真实联调可在 backend/conf/env.py 填写；不要提交真实Key。
+AMAP_KEY = ''
+JUHE_WEATHER_KEY = ''
+
+# 华为OCR当前可暂不配置，使用自开发OCR插件/PaddleOCR。
+HUAWEI_OCR_ENDPOINT = ''
+HUAWEI_OCR_AK = ''
+HUAWEI_OCR_SK = ''

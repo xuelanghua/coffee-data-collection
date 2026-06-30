@@ -1,17 +1,48 @@
 {
   "schema_version": 1,
-  "current_stage": "S2",
+  "current_stage": "S5",
   "stage_status": "IN_PROGRESS",
   "confirmed_gates": [
     "G0",
-    "G1"
+    "G1",
+    "G2",
+    "G3",
+    "G4"
   ],
   "completed_requirements": [
     "G0",
-    "G1"
+    "G1",
+    "G2",
+    "G3",
+    "G4"
   ],
-  "blocked_items": [],
-  "last_verification_at": "2026-06-23T09:11:12.536128+00:00",
-  "last_report": "reports/gates/G2-design-input.md",
-  "next_action": "review S2 design documents and wait for user to confirm G2 before business implementation"
+  "blocked_items": [
+    {
+      "id": "S5-HUAWEI-OCR-CONFIG",
+      "title": "华为 OCR 暂不配置和测试，使用自开发 OCR 插件",
+      "status": "BLOCKED",
+      "unblock_condition": "后续如需接入华为 OCR，再提供 HUAWEI_OCR_ENDPOINT、HUAWEI_OCR_AK、HUAWEI_OCR_SK 并确认服务已开通"
+    },
+    {
+      "id": "S5-REAL-DEVICE",
+      "title": "缺少 Android/iOS 真机",
+      "status": "BLOCKED",
+      "unblock_condition": "用户按 docs/delivery/App打包与自行测试流程.md 自行打包和真机测试后反馈；至少需明确目标平台、设备型号、系统版本、网络、权限状态、安装方式和问题证据"
+    },
+    {
+      "id": "S5-REAL-SAMPLES",
+      "title": "缺少真实设备图片样本集",
+      "status": "BLOCKED",
+      "unblock_condition": "用户确认真实设备照片暂时不提供，先记录阻塞；后续提供真实设备图片样本和期望字段标注后再补充测试"
+    },
+    {
+      "id": "S5-PREPROD-ENV",
+      "title": "缺少生产或准生产部署环境",
+      "status": "BLOCKED",
+      "unblock_condition": "提供部署环境、密钥注入方式、数据库/Redis/对象存储策略和回滚要求"
+    }
+  ],
+  "last_verification_at": "2026-06-30T06:11:45Z",
+  "last_report": "reports/gates/G5-run-confirmation-input.md",
+  "next_action": "User will package and test the UniApp manually using docs/delivery/App打包与自行测试流程.md, then provide feedback for fixes; App real-device validation remains BLOCKED until feedback evidence is provided"
 }

@@ -1,0 +1,11 @@
+{
+  "name": "coffee-collector-app",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "lint": "node scripts/lint.mjs",
+    "build:app": "node scripts/build-app-check.mjs"
+  }
+}

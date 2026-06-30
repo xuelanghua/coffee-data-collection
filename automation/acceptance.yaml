@@ -93,178 +93,998 @@ requirements:
       - docs/design/采集上传质检导出方案.md
       - docs/design/测试方案.md
 
+  - id: G3-IMPLEMENTATION-CONFIRMATION
+    priority: P0
+    title: G3 本地实现闭环和自动化证据确认
+    status: PASS
+    implementation: reports/gates/G3-implementation-input.md; reports/gates/G3-confirmation.md; automation/state.json
+    verification: 用户在对话中明确确认 G3，同意当前 S3 本地实现闭环和自动化证据进入 S4；真实服务、真机、真实样本和准生产部署仍按 G4/G5 处理，不在 G3 中声明 PASS。
+    evidence:
+      - reports/gates/G3-implementation-input.md
+      - reports/gates/G3-confirmation.md
+
+  - id: S4-FULL-LOCAL-VERIFICATION
+    priority: P0
+    title: S4 本地完整自动验证
+    status: PASS
+    implementation: scripts/verify-all.sh; scripts/check-delivery-gates.py; tests/test_delivery_gate_checks.py; automation/runbook.md
+    verification: scripts/verify-all.sh 已在 S4 阶段通过，覆盖后端 coffee API 41 项、App 单测 23 项及 lint/build、Web 契约 9 项及 build、PaddleOCR 3 项、基础设施和交付契约 8 项、交付门禁检查和 docker compose 静态配置；TDD 修复交付门禁脚本从 automation/state.json 读取 current_stage，输出 stage=S4；runbook 任务书路径已修正；S4 代码审查发现并修复 App 事件提交归属校验。
+    evidence:
+      - reports/release/S4-local-verification.md
+      - scripts/verify-all.sh
+      - scripts/check-delivery-gates.py
+      - tests/test_delivery_gate_checks.py
+      - automation/runbook.md
+
+  - id: S4-CODE-REVIEW-APP-EVENT-OWNERSHIP
+    priority: P0
+    title: S4 代码审查修复 App 事件提交归属校验
+    status: PASS
+    implementation: backend/apps/coffee/views.py; backend/apps/coffee/tests/test_app_api.py; backend/apps/coffee/tests/test_resubmit_api.py
+    verification: TDD 新增 test_submit_rejects_event_owned_by_another_collector，先确认未修复时其他采集员可越权提交返回 200；修复后 App 提交和退回复核重新提交入口在写入前校验 event.collector_id 与当前用户一致，越权请求返回 403；定向 5 项后端测试通过，完整 scripts/verify-all.sh 通过。
+    evidence:
+      - reports/review/S4-code-review.md
+      - reports/release/S4-local-verification.md
+      - backend/apps/coffee/views.py
+      - backend/apps/coffee/tests/test_app_api.py
+      - backend/apps/coffee/tests/test_resubmit_api.py
+
+  - id: S4-REAL-PROVIDER-CONFIG-GATE
+    priority: P0
+    title: S4 真实服务配置门禁
+    status: BLOCKED
+    implementation: scripts/check-delivery-gates.py; reports/release/S4-local-verification.md
+    verification: 交付门禁脚本在 S4 输出 real_provider_config_gate=BLOCKED，缺少高德地图真实 Key、聚合天气真实 Key、华为 OCR Endpoint、华为 OCR AK、华为 OCR SK；G4 未确认前不执行真实服务联调，不声明真实服务 PASS。
+    evidence:
+      - reports/release/S4-local-verification.md
+      - scripts/check-delivery-gates.py
+
+  - id: S4-G4-RELEASE-INTEGRATION-INPUT
+    priority: P0
+    title: G4 发布和真实联调确认输入
+    status: PASS
+    implementation: reports/gates/G4-release-integration-input.md; reports/release/S4-local-verification.md; reports/review/S4-code-review.md
+    verification: 已输出 G4 确认输入，列明 S4 本地验证和代码审查证据、G4 需确认事项、允许执行动作、真实服务/真机/真实样本/准生产 BLOCKED 项和建议确认语；未将 G4 标记为已确认，G4 未确认前不执行真实联调。
+    evidence:
+      - reports/gates/G4-release-integration-input.md
+      - reports/release/S4-local-verification.md
+      - reports/review/S4-code-review.md
+
+  - id: G4-RELEASE-INTEGRATION-CONFIRMATION
+    priority: P0
+    title: G4 发布和真实联调确认
+    status: PASS
+    implementation: reports/gates/G4-release-integration-input.md; reports/gates/G4-confirmation.md; automation/state.json
+    verification: 用户在对话中明确确认 G4，接受当前 S4 本地自动验证、代码审查和发布准备证据，允许进入发布/真实联调准备；未提供的真实 Key、真机、真实样本和准生产环境按 BLOCKED 处理，不声明真实验收 PASS。
+    evidence:
+      - reports/gates/G4-release-integration-input.md
+      - reports/gates/G4-confirmation.md
+
+  - id: S5-REAL-INTEGRATION-BLOCKERS
+    priority: P0
+    title: S5 真实服务、真机、真实样本和准生产环境阻塞复核
+    status: BLOCKED
+    implementation: automation/state.json; reports/gates/G4-confirmation.md; reports/gates/S5-provider-config-review.md
+    verification: G4 确认后进入 S5；当前门禁脚本已从 backend/conf/env.py 识别到 AMAP_KEY 和 JUHE_WEATHER_KEY 配置来源，高德地图地理编码和聚合天气实时天气真实 API 调用已通过；用户确认华为 OCR 暂不配置和测试，改用自开发 OCR 插件，华为 OCR 保持 deferred/BLOCKED；Android/iOS 真机、真实设备图片样本集和生产/准生产部署环境仍缺失，因此 S5 总体验收仍为 BLOCKED。
+    evidence:
+      - reports/gates/G4-confirmation.md
+      - reports/gates/S5-blocked-review.md
+      - reports/gates/S5-provider-config-review.md
+
+  - id: S5-AMAP-JUHE-CONFIG-VISIBLE
+    priority: P0
+    title: S5 高德地图和聚合天气配置可见性复核
+    status: PASS
+    implementation: scripts/check-delivery-gates.py; backend/conf/env.py; backend/conf/env.example.py; tests/test_delivery_gate_checks.py
+    verification: python3 scripts/check-delivery-gates.py --json 输出 overall_status=PASS，real_provider_config_gate=PASS，AMAP_KEY 和 JUHE_WEATHER_KEY 来源均为 env_file；脚本只展示配置来源，不展示真实 Key。该 PASS 仅代表本地门禁可读取配置，不代表已完成高德/聚合天气真实 API 调用验收。
+    evidence:
+      - reports/gates/S5-provider-config-review.md
+      - scripts/check-delivery-gates.py
+      - backend/conf/env.example.py
+      - tests/test_delivery_gate_checks.py
+
+  - id: S5-AMAP-JUHE-REAL-CALL
+    priority: P0
+    title: S5 高德地图和聚合天气真实 API 调用
+    status: PASS
+    implementation: scripts/verify-real-providers.py; scripts/check-delivery-gates.py; reports/gates/S5-provider-config-review.md
+    verification: 用户明确允许使用当前配置项发起真实 API 调用；python3 scripts/verify-real-providers.py --city 普洱市 --json 返回 overall_status=PASS，高德地图 geocode_geo 返回 infocode=10000、云南省普洱市和坐标摘要，聚合天气 simpleWeather_query 返回 error_code=0、查询成功和实时天气摘要；输出仅包含脱敏摘要，不包含 Key 明文或请求 URL。
+    evidence:
+      - reports/gates/S5-provider-config-review.md
+      - scripts/verify-real-providers.py
+      - tests/test_real_provider_verification.py
+
+  - id: S5-SELF-DEVELOPED-OCR-PLUGIN
+    priority: P0
+    title: S5 自开发 OCR 插件验证
+    status: PASS
+    implementation: services/paddleocr/; reports/gates/S5-provider-config-review.md
+    verification: 用户确认华为云 OCR 暂不配置和测试，先使用自开发 OCR 插件；PYTHONPATH=services/paddleocr python3 -m unittest discover -s services/paddleocr/tests -v 通过 3 项，覆盖健康检查、十项设备采集字段解析和 Provider 契约返回。该 PASS 仅代表自开发 OCR 插件本地验证，不代表华为 OCR 真实验收 PASS。
+    evidence:
+      - reports/gates/S5-provider-config-review.md
+      - services/paddleocr/tests/test_device_template.py
+
+  - id: S5-PROVIDER-ENV-PY-CONFIG
+    priority: P0
+    title: S5 支持 backend/conf/env.py 配置真实 Provider Key
+    status: PASS
+    implementation: scripts/check-delivery-gates.py; backend/conf/env.py; backend/conf/env.example.py; tests/test_delivery_gate_checks.py
+    verification: TDD 覆盖门禁脚本可从临时 env.py 文件读取 AMAP_KEY 和 JUHE_WEATHER_KEY；脚本优先进程环境变量，其次读取 backend/conf/env.py 简单字符串赋值；输出仅展示配置来源，不展示真实 Key；门禁脚本测试 3 项通过，py_compile 语法校验通过；当前本地门禁已从 backend/conf/env.py 识别到高德/聚合天气配置来源，真实外部 API 调用仍需另行验证。
+    evidence:
+      - reports/gates/S5-provider-config-review.md
+      - scripts/check-delivery-gates.py
+      - backend/conf/env.example.py
+      - tests/test_delivery_gate_checks.py
+
+  - id: G5-RUN-CONFIRMATION-INPUT
+    priority: P0
+    title: G5 运行确认输入与阻塞复核
+    status: BLOCKED
+    implementation: reports/gates/G5-run-confirmation-input.md; automation/state.json; automation/acceptance.yaml
+    verification: 已汇总 S5 当前真实服务证据和 G5 阻塞项；高德地图和聚合天气真实 API 调用已 PASS，自开发 OCR 插件本地验证已 PASS；已补充目标平台真机可接受提供形式，包括 USB 直连、用户现场录屏/截图、远程真机/云真机平台、安装包加日志回传；用户确认 App 端先不做测试，先由用户按 App 打包流程自行打包和真机测试，反馈后再调整；用户确认真实设备照片暂时不提供，先记录 BLOCKED，后续再补充测试；华为 OCR 按用户策略 deferred/BLOCKED，Android/iOS 真机、真实设备图片样本集、生产或准生产部署环境仍缺失，因此 G5 运行确认不能声明 PASS。
+    evidence:
+      - reports/gates/G5-run-confirmation-input.md
+      - reports/gates/S5-provider-config-review.md
+      - docs/delivery/App打包与自行测试流程.md
+
   - id: P0-IDENTITY-PERMISSIONS
     priority: P0
     title: App/Web 共用用户、组织、角色和权限
     status: NOT_VERIFIED
-    implementation: backend/apps/coffee/ 待开发; web/src/views/coffee/ 待开发; coffee-collector-app/ 待开发
+    implementation: coffee-collector-app/src/services/api.js 已实现 App Token 保存和授权请求以及手机号密码登录调用；backend/apps/coffee/views.py 已实现 coffee 业务侧手机号密码登录适配、Web 采集事件列表/详情、照片资产列表、OCR 任务列表、统计接口和导出任务列表的采集员本人数据范围过滤和审核员部门级数据范围过滤；backend/apps/coffee/menu.py 已实现 coffee 业务菜单、按钮权限和四类业务角色矩阵初始化；web coffee 页面关键操作已接入 v-permission；coffee-collector-app/src/services/role-visibility.js 已实现 App 角色入口可见性；完整人工角色登录和多组织真实数据权限待验证
     verification: 自动权限测试和人工角色矩阵测试。
-    evidence: []
+    evidence:
+      - coffee-collector-app/tests/api-client.test.mjs
+      - reports/development/S3-uniapp-collection-flow.md
+      - backend/apps/coffee/tests/test_menu_initialization.py
+      - web/tests/coffee-web-contract.test.mjs
+      - coffee-collector-app/tests/role-visibility.test.mjs
+      - reports/development/S3-role-matrix-permissions.md
+      - backend/apps/coffee/tests/test_mobile_login_api.py
+      - reports/development/S3-mobile-phone-login.md
+      - backend/apps/coffee/tests/test_web_event_list_api.py
+      - backend/apps/coffee/tests/test_web_photo_ocr_api.py
+      - backend/apps/coffee/tests/test_statistics_export_api.py
+      - reports/development/S3-event-data-scope.md
 
   - id: P0-PHONE-PASSWORD-LOGIN
     priority: P0
     title: 手机号和密码登录
-    status: NOT_VERIFIED
-    implementation: 后端认证和 UniApp 登录页待开发
-    verification: API 登录测试、App 登录人工测试、Web 登录回归。
-    evidence: []
+    status: PASS
+    implementation: backend/apps/coffee/views.py 已实现 /api/coffee/auth/mobile-login/ 手机号密码登录适配，使用 dvadmin Users 密码校验和 SimpleJWT 签发 access/refresh；coffee-collector-app/src/services/api.js 已改为调用 coffee 业务登录入口并保存 Token；App 登录页骨架已存在，真机人工登录待 G5 验证
+    verification: 后端 API 测试覆盖手机号密码登录返回 Token、用户和角色信息；App 客户端契约测试覆盖登录路径和 Token 授权请求；后端 coffee 回归和 App 全量测试通过。
+    evidence:
+      - coffee-collector-app/tests/api-client.test.mjs
+      - reports/development/S3-uniapp-collection-flow.md
+      - backend/apps/coffee/tests/test_mobile_login_api.py
+      - reports/development/S3-mobile-phone-login.md
 
   - id: P0-ROLE-MATRIX
     priority: P0
     title: 采集员、审核员、管理员、查看员角色权限
-    status: NOT_VERIFIED
-    implementation: 后端权限、Web 菜单、App 可见性待开发
-    verification: 权限自动测试和人工可见性测试。
-    evidence: []
+    status: PASS
+    implementation: backend/apps/coffee/menu.py 已实现 coffee_collector、coffee_reviewer、coffee_admin、coffee_viewer 四类业务角色，按角色初始化 coffee 业务菜单、按钮权限和 data_range；web/src/views/coffee/ 已对审核、退回、批量审核、照片审核、OCR 校正、Provider 配置等关键按钮接入 v-permission；coffee-collector-app/src/services/role-visibility.js 已实现 App 入口按角色过滤
+    verification: 后端测试覆盖角色、菜单、按钮权限和数据范围矩阵；Web 契约测试覆盖权限指令；App 单元测试覆盖四类角色入口可见性；后端 coffee 回归、App 全量测试和 Web build 通过。
+    evidence:
+      - backend/apps/coffee/tests/test_menu_initialization.py
+      - web/tests/coffee-web-contract.test.mjs
+      - coffee-collector-app/tests/role-visibility.test.mjs
+      - reports/development/S3-role-matrix-permissions.md
 
   - id: P0-ID-HIERARCHY
     priority: P0
     title: 先编号后采集和 Plot_ID、Point_ID、Event_ID、Photo_ID 四级主键
     status: NOT_VERIFIED
-    implementation: 数据库模型和编号服务待开发
+    implementation: backend/apps/coffee/models.py 已实现 Plot_ID、Point_ID、Event_ID、Photo_ID 模型字段；backend/apps/coffee/numbering.py 已实现 PL/PT/EV/PH + 日期 + 4 位序号的服务端编号；backend/apps/coffee/views.py 已实现 App 创建地块、点位、事件、照片时缺省编号自动生成；完整权限、全链路人工和生产级并发编号验收待完成
     verification: 领域规则测试、API 幂等测试。
-    evidence: []
+    evidence:
+      - reports/development/S3-backend-domain-models.md
+      - backend/apps/coffee/tests/test_app_api.py
+      - reports/development/S3-app-backend-api.md
+      - backend/apps/coffee/tests/test_numbering_api.py
+      - reports/development/S3-backend-numbering-service.md
+      - coffee-collector-app/tests/server-id-flow.test.mjs
+      - reports/development/S3-uniapp-server-id-flow.md
 
   - id: P0-COLLECTION-DOMAIN
     priority: P0
     title: 地块、采样点、采集事件、照片资产关系
     status: NOT_VERIFIED
-    implementation: backend/apps/coffee/ 待开发
+    implementation: backend/apps/coffee/models.py 已实现地块、采样点、采集事件、照片资产、OCR 结果、测量记录和字段值关系；backend/apps/coffee/views.py 已实现 App 侧创建、照片初始化/完成、OCR 和最终提交 API 骨架；质检待开发
     verification: 模型测试、API 测试、Web/App 人工流程测试。
-    evidence: []
+    evidence:
+      - backend/apps/coffee/tests/test_models.py
+      - backend/apps/coffee/tests/test_app_api.py
+      - backend/apps/coffee/tests/test_photo_ocr_api.py
+      - backend/apps/coffee/tests/test_web_event_detail_api.py
+      - reports/development/S3-backend-domain-models.md
+      - reports/development/S3-app-backend-api.md
+      - reports/development/S3-photo-ocr-backend.md
+      - reports/development/S3-web-event-detail-api.md
 
   - id: P0-LOCATION-PLOT-BOUNDARY
     priority: P0
     title: 定位、手动选点、地块边界和面积复核
     status: NOT_VERIFIED
-    implementation: App 地图采集、Provider 契约、后端地理模型待开发
+    implementation: backend/apps/coffee/models.py 已实现现场地块边界、面积、坐标系和边界版本模型；backend/apps/coffee/views.py 已实现 App 现场地块和点位创建 API；coffee-collector-app/src/services/api.js 已实现 App 调用封装；coffee-collector-app/src/services/geometry.js 已实现本地 Polygon GeoJSON 和面积亩数计算；App 真机地图圈选 UI、Provider 契约和后端面积复核 API 待开发
     verification: Mock 地图测试；真实高德 Key 缺失时真实验证 BLOCKED。
-    evidence: []
+    evidence:
+      - reports/development/S3-backend-domain-models.md
+      - backend/apps/coffee/tests/test_app_api.py
+      - reports/development/S3-app-backend-api.md
+      - coffee-collector-app/tests/api-client.test.mjs
+      - reports/development/S3-uniapp-collection-flow.md
+      - coffee-collector-app/tests/offline-map-upload.test.mjs
+      - reports/development/S3-uniapp-offline-map-upload-services.md
+      - coffee-collector-app/tests/app-pages.test.mjs
+      - reports/development/S3-uniapp-page-shells.md
+      - coffee-collector-app/tests/interaction-adapters.test.mjs
+      - reports/development/S3-uniapp-interaction-adapters.md
 
   - id: P0-PHOTO-WATERMARK-METADATA
     priority: P0
     title: 分类拍照、水印、不可变原图、metadata 和图片预检
     status: NOT_VERIFIED
-    implementation: App 拍照、后端图片资产、对象存储适配待开发
+    implementation: backend/apps/coffee/models.py 已实现照片资产、分类、原图/水印图路径、Hash、metadata、预检状态、审核状态和不可变状态；backend/apps/coffee/views.py 已实现照片初始化和完成上传 API；coffee-collector-app/src/services/api.js 已实现 App 调用封装；coffee-collector-app/src/services/watermark.js 已实现水印文本和 metadata 载荷；App 真机拍照、真实图片写水印、对象存储适配和真实图片预检待开发
     verification: 图片处理单测、App 人工测试、原图不可变审计检查。
-    evidence: []
+    evidence:
+      - backend/apps/coffee/tests/test_photo_ocr_api.py
+      - reports/development/S3-photo-ocr-backend.md
+      - coffee-collector-app/tests/api-client.test.mjs
+      - reports/development/S3-uniapp-collection-flow.md
+      - coffee-collector-app/tests/offline-map-upload.test.mjs
+      - reports/development/S3-uniapp-offline-map-upload-services.md
+      - coffee-collector-app/tests/app-pages.test.mjs
+      - reports/development/S3-uniapp-page-shells.md
+      - coffee-collector-app/tests/interaction-adapters.test.mjs
+      - reports/development/S3-uniapp-interaction-adapters.md
+      - backend/apps/coffee/tests/test_numbering_api.py
+      - reports/development/S3-backend-numbering-service.md
 
   - id: P0-OFFLINE-UPLOAD-MANIFEST
     priority: P0
     title: 离线草稿、上传队列、断点续传、分片上传、幂等提交和 Manifest
     status: NOT_VERIFIED
-    implementation: coffee-collector-app/ 待开发; backend/apps/coffee/ 待开发
+    implementation: backend/apps/coffee/views.py 已实现采集事件最终提交 Manifest Hash 和幂等提交骨架；coffee-collector-app/src/services/collection-flow.js 已实现 App 侧提交 payload 组装；coffee-collector-app/src/services/draft-store.js 已实现离线草稿存取；coffee-collector-app/src/services/upload-queue.js 已实现照片完成、OCR 和最终提交队列顺序；真实分片上传、断点续传、弱网人工验证待开发
     verification: App 单测、上传 API 测试、弱网人工测试。
-    evidence: []
+    evidence:
+      - backend/apps/coffee/tests/test_app_api.py
+      - reports/development/S3-app-backend-api.md
+      - coffee-collector-app/tests/api-client.test.mjs
+      - reports/development/S3-uniapp-collection-flow.md
+      - coffee-collector-app/tests/offline-map-upload.test.mjs
+      - reports/development/S3-uniapp-offline-map-upload-services.md
+      - coffee-collector-app/tests/app-pages.test.mjs
+      - reports/development/S3-uniapp-page-shells.md
+      - coffee-collector-app/tests/interaction-adapters.test.mjs
+      - reports/development/S3-uniapp-interaction-adapters.md
+      - coffee-collector-app/tests/server-id-flow.test.mjs
+      - reports/development/S3-uniapp-server-id-flow.md
+      - backend/apps/coffee/tests/test_photo_chunk_upload_api.py
+      - reports/development/S3-photo-chunk-upload-api.md
+      - coffee-collector-app/tests/upload-chunks.test.mjs
+      - reports/development/S3-uniapp-chunk-upload-queue.md
+      - coffee-collector-app/tests/upload-diagnostics.test.mjs
+      - reports/development/S3-uniapp-weak-network-diagnostics.md
 
   - id: P0-MEASUREMENT-RETAKE
     priority: P0
     title: 设备测量、异常复测和全部记录留存
     status: NOT_VERIFIED
-    implementation: 采集事件和测量记录模型待开发
-    verification: 领域规则测试、复测流程人工测试。
-    evidence: []
+    implementation: backend/apps/coffee/models.py 已实现测量记录、10 个设备字段、异常标记和复测关联；backend/apps/coffee/serializers.py 和 backend/apps/coffee/views.py 已支持同次提交内 client_measurement_id/retake_of_client_id 关联复测记录；coffee-collector-app/src/services/collection-flow.js 已实现 OCR 回填设备字段、异常测量保留和复测 payload 追加；真实设备/真机复测 UI 人工验收待完成
+    verification: 后端自动测试覆盖异常测量和复测记录同时提交后 retake_of 关联原记录；App 单测覆盖异常测量保留、复测 payload 追加和 10 个设备字段复用；App 全量测试和后端 coffee 回归通过。真实设备复测流程人工测试待完成。
+    evidence:
+      - backend/apps/coffee/tests/test_models.py
+      - backend/apps/coffee/tests/test_app_api.py
+      - reports/development/S3-backend-domain-models.md
+      - reports/development/S3-app-backend-api.md
+      - coffee-collector-app/tests/api-client.test.mjs
+      - reports/development/S3-uniapp-collection-flow.md
+      - reports/development/S3-measurement-retake-flow.md
+
+  - id: S3-MEASUREMENT-RETAKE-FLOW
+    priority: P0
+    title: App 异常测量复测 payload 和后端复测关联
+    status: PASS
+    implementation: coffee-collector-app/src/services/collection-flow.js; coffee-collector-app/tests/api-client.test.mjs; backend/apps/coffee/serializers.py; backend/apps/coffee/views.py; backend/apps/coffee/tests/test_app_api.py
+    verification: TDD 覆盖 App recordMeasurementRetake 生成原始异常测量和复测测量，保留原始 OCR/设备字段值，通过 client_measurement_id/retake_of_client_id 表达复测关系；后端提交 API 在同次提交中保存两条 MeasurementRecord，并将复测记录 retake_of 链接到原异常记录；App 全量测试 23 tests OK，后端 coffee 回归 40 tests OK。
+    evidence:
+      - coffee-collector-app/tests/api-client.test.mjs
+      - backend/apps/coffee/tests/test_app_api.py
+      - reports/development/S3-measurement-retake-flow.md
 
   - id: P0-OCR-PROVIDERS
     priority: P0
     title: PaddleOCR、华为 OCR、人工录入 Provider 契约
     status: NOT_VERIFIED
-    implementation: docs/design/Provider契约说明.md 待创建; services/paddleocr/ 待开发
+    implementation: docs/design/Provider契约说明.md 已设计；backend/apps/coffee/models.py 已实现 OCR Provider 结果、Provider 调用日志和 ProviderConfig 配置表；backend/apps/coffee/providers.py 已实现配置化 OCR Provider adapter，可按 ProviderConfig 调用本地 PaddleOCR HTTP 契约并映射设备字段；backend/apps/coffee/views.py 已实现 manual/mock OCR 落库、PaddleOCR adapter 调用、Provider 配置列表/创建和本地连接测试 API；web/src/views/coffee/provider/index.vue 已实现 Provider 配置页面骨架；services/paddleocr/ 已实现本地 PaddleOCR mock HTTP 服务骨架、健康检查和 device_reading_v1 模板解析；华为真实 Provider 和真实样本验收待外部条件
     verification: Provider Mock 测试、PaddleOCR 服务测试；华为真实配置缺失时 BLOCKED。
-    evidence: []
+    evidence:
+      - backend/apps/coffee/tests/test_photo_ocr_api.py
+      - reports/development/S3-photo-ocr-backend.md
+      - backend/apps/coffee/tests/test_provider_config_api.py
+      - reports/development/S3-web-provider-config.md
+      - services/paddleocr/tests/test_device_template.py
+      - reports/development/S3-paddleocr-compose.md
+      - backend/apps/coffee/providers.py
+      - reports/development/S3-ocr-provider-adapter.md
 
   - id: P0-OCR-AUDIT-CORRECTION
     priority: P0
     title: OCR 原始响应、置信度、人工修正、调用日志和审计
     status: NOT_VERIFIED
-    implementation: OCR 结果、修正和调用日志模型待开发
+    implementation: backend/apps/coffee/models.py 已实现最终字段值、OCR 结果、OCR 修正版本和 Provider 调用日志；backend/apps/coffee/views.py 已实现 OCR 结果写入、App 校正草稿、Web OCR 任务列表和 Web 校正保存 API；coffee-collector-app/src/services/collection-flow.js 已实现 OCR 回填和输入框校正状态；web/src/views/coffee/ocr/index.vue 已实现 OCR 校正页面骨架；完整操作审计和真实 Provider 待开发
     verification: API 测试、审计日志检查、人工校正流程测试。
-    evidence: []
+    evidence:
+      - reports/development/S3-backend-domain-models.md
+      - backend/apps/coffee/tests/test_app_api.py
+      - reports/development/S3-app-backend-api.md
+      - backend/apps/coffee/tests/test_photo_ocr_api.py
+      - reports/development/S3-photo-ocr-backend.md
+      - coffee-collector-app/tests/api-client.test.mjs
+      - reports/development/S3-uniapp-collection-flow.md
+      - backend/apps/coffee/tests/test_web_photo_ocr_api.py
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-web-photo-ocr-review-pages.md
 
   - id: P0-QA-RETURN-REVIEW
     priority: P0
     title: 图片和数据包质检、退回复核
     status: NOT_VERIFIED
-    implementation: 质检模型、Web 审核页、App 退回修改待开发
+    implementation: backend/apps/coffee/models.py 已实现 QualityReview；backend/apps/coffee/views.py 已实现数据包单条审核通过、单条退回、批量审核通过、批量退回，以及照片审核通过/退回补拍 API；web/src/views/coffee/event/index.vue 已实现事件审核页骨架；web/src/views/coffee/photo/index.vue 已实现照片审核页骨架；App 退回修改已具备重新提交骨架，完整人工验收待执行
     verification: 状态流转测试、Web/App 人工测试。
-    evidence: []
+    evidence:
+      - backend/apps/coffee/tests/test_review_api.py
+      - reports/development/S3-quality-review-api.md
+      - backend/apps/coffee/tests/test_resubmit_api.py
+      - coffee-collector-app/tests/resubmit-flow.test.mjs
+      - reports/development/S3-app-return-resubmit.md
+      - backend/apps/coffee/tests/test_web_photo_ocr_api.py
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-web-photo-ocr-review-pages.md
 
   - id: P0-B-GRADE-RULE
     priority: P0
     title: B 级数量规则
-    status: NOT_VERIFIED
-    implementation: 领域规则服务待开发
-    verification: 领域规则单元测试。
-    evidence: []
+    status: PASS
+    implementation: backend/apps/coffee/models.py 已实现 BGradeRule 规则模型和版本；backend/apps/coffee/views.py 已实现 Web B 级规则列表、创建和按规则即时校验 API；web/src/views/coffee/b-grade/index.vue 已实现 B 级规则配置和校验页面骨架
+    verification: 后端测试覆盖 B 级规则创建、列表和规则校验；Web 契约测试覆盖 B 级规则 API 封装和页面关键字段/按钮；后端 coffee 回归和 Web build 通过。
+    evidence:
+      - backend/apps/coffee/tests/test_b_grade_rule_api.py
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-b-grade-rule-service.md
 
   - id: P0-WEB-MANAGEMENT
     priority: P0
     title: Web 业务菜单、列表、图片审核、OCR 校正、配置、统计、绩效和导出
     status: NOT_VERIFIED
-    implementation: web/src/views/coffee/ 待开发; web/src/api/coffee/ 待开发
+    implementation: backend/apps/coffee/views.py 已实现 Web 采集事件详情聚合 API、事件列表、单条审核、批量审核、照片资产列表、照片审核、OCR 任务列表、OCR 校正 API、Provider 配置和连接测试 API、统计 API、绩效 API 和导出任务 API；web/src/views/coffee/ 已实现采集事件、照片资产、OCR 校正、Provider 配置、统计和导出页面骨架；菜单权限完整人工验收和真实导出文件生成待完成
     verification: Web lint/build、页面人工测试、导出任务测试。
-    evidence: []
+    evidence:
+      - backend/apps/coffee/tests/test_web_event_detail_api.py
+      - reports/development/S3-web-event-detail-api.md
+      - backend/apps/coffee/tests/test_review_api.py
+      - reports/development/S3-quality-review-api.md
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-web-event-detail-review-page.md
+      - backend/apps/coffee/tests/test_web_event_list_api.py
+      - backend/apps/coffee/tests/test_menu_initialization.py
+      - reports/development/S3-web-menu-event-list.md
+      - backend/apps/coffee/tests/test_web_photo_ocr_api.py
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-web-photo-ocr-review-pages.md
+      - backend/apps/coffee/tests/test_provider_config_api.py
+      - reports/development/S3-web-provider-config.md
+      - backend/apps/coffee/tests/test_statistics_export_api.py
+      - reports/development/S3-web-statistics-export.md
+      - backend/apps/coffee/tests/test_b_grade_rule_api.py
+      - reports/development/S3-b-grade-rule-service.md
+      - backend/apps/coffee/tests/test_menu_initialization.py
+      - reports/development/S3-role-matrix-permissions.md
 
   - id: P0-INFRA-COMPOSE
     priority: P0
     title: MySQL 8、Redis、Celery、PaddleOCR、健康检查和持久化 Compose
     status: NOT_VERIFIED
-    implementation: docker-compose.yml 待扩展; services/paddleocr/ 待开发
+    implementation: docker-compose.yml 已扩展 MySQL 8、Redis、Django、Celery Worker、Celery Beat、PaddleOCR 服务、基础健康检查和 PaddleOCR 持久卷；services/paddleocr/Dockerfile 已实现本地 mock 服务镜像入口；真实 compose build/up 和生产/准生产部署待 G4 后验证
     verification: Docker Compose 启动测试、健康检查测试；生产环境缺失时真实部署 BLOCKED。
-    evidence: []
+    evidence:
+      - tests/test_infra_compose.py
+      - services/paddleocr/tests/test_device_template.py
+      - reports/development/S3-paddleocr-compose.md
 
   - id: P0-AUTOMATED-TESTS-DELIVERY
     priority: P0
     title: 自动测试、安全检查、真实服务配置门禁和交付文档
     status: NOT_VERIFIED
-    implementation: scripts/ 待开发; docs/ 待补齐; reports/ 待补齐
-    verification: scripts/verify-all.sh、本地测试报告、安全检查报告。
-    evidence: []
+    implementation: scripts/verify-all.sh 已实现本地一键验证骨架，覆盖后端 coffee API、App 单测/lint/build、Web 契约/build、PaddleOCR 服务测试、基础设施契约、交付门禁检查和 docker compose 静态配置；scripts/check-delivery-gates.py 已实现业务源码硬编码密钥静态扫描和真实服务配置门禁检查；docs/delivery/交付文档索引.md 已建立需求、设计、API、UI、运行验证、真实服务门禁和证据报告索引；真实服务验证待补齐
+    verification: scripts/verify-all.sh、本地测试报告、安全检查报告；交付门禁脚本当前输出 security_static_scan=PASS，real_provider_config_gate=BLOCKED，原因是高德、聚合天气、华为 OCR 真实配置缺失；文档索引测试覆盖关键交付材料路径存在。
+    evidence:
+      - scripts/verify-all.sh
+      - scripts/check-delivery-gates.py
+      - docs/delivery/交付文档索引.md
+      - tests/test_verify_all_script.py
+      - tests/test_delivery_gate_checks.py
+      - tests/test_delivery_documentation_index.py
+      - reports/development/S3-verify-all-script.md
+      - reports/development/S3-delivery-gate-checks.md
+      - reports/development/S3-delivery-documentation-index.md
+
+  - id: S3-BACKEND-DOMAIN-MODELS
+    priority: P0
+    title: 后端 coffee 领域模型基线
+    status: PASS
+    implementation: backend/apps/coffee/models.py; backend/apps/coffee/migrations/0001_initial.py; backend/application/settings.py
+    verification: 后端模型测试覆盖 App 现场圈选正式地块、地块边界版本、现场点选正式点位、采集事件、设备采集数据字段、OCR 回填和人工校准字段值持久化。
+    evidence:
+      - backend/apps/coffee/tests/test_models.py
+      - reports/development/S3-backend-domain-models.md
+
+  - id: S3-APP-BACKEND-API
+    priority: P0
+    title: App 现场采集后端 API 骨架闭环
+    status: PASS
+    implementation: backend/apps/coffee/views.py; backend/apps/coffee/serializers.py; backend/apps/coffee/urls.py; backend/application/urls.py
+    verification: API 测试覆盖 App 创建现场正式地块、创建现场正式点位、创建采集事件、最终提交 Manifest、设备采集数据、OCR 回填校准字段和重复提交幂等返回。
+    evidence:
+      - backend/apps/coffee/tests/test_app_api.py
+      - reports/development/S3-app-backend-api.md
+
+  - id: S3-PHOTO-OCR-BACKEND
+    priority: P0
+    title: 照片资产和 OCR 后端模型/API
+    status: PASS
+    implementation: backend/apps/coffee/models.py; backend/apps/coffee/migrations/0002_photoasset_ocrresult_ocrcorrection_providercalllog_and_more.py; backend/apps/coffee/views.py; backend/apps/coffee/serializers.py; backend/apps/coffee/urls.py
+    verification: API 测试覆盖照片初始化、上传完成、原图 Hash 校验、不可变状态锁定、OCR 结果落库、Provider 调用日志、人工校正版本和 OCR 结果查询。
+    evidence:
+      - backend/apps/coffee/tests/test_photo_ocr_api.py
+      - reports/development/S3-photo-ocr-backend.md
+
+  - id: S3-WEB-EVENT-DETAIL-API
+    priority: P0
+    title: Web 采集事件详情聚合 API
+    status: PASS
+    implementation: backend/apps/coffee/views.py; backend/apps/coffee/serializers.py; backend/apps/coffee/urls.py
+    verification: API 测试覆盖按 Event_ID 聚合 event、plot、point、field_values、photos、ocr_results、ocr_corrections、measurements 和 Provider 调用日志。
+    evidence:
+      - backend/apps/coffee/tests/test_web_event_detail_api.py
+      - reports/development/S3-web-event-detail-api.md
+
+  - id: S3-UNIAPP-COLLECTION-FLOW
+    priority: P0
+    title: UniApp App 侧采集闭环骨架
+    status: PASS
+    implementation: coffee-collector-app/
+    verification: App 单元测试覆盖登录 Token、地块/点位/事件/照片/OCR/校正/提交 API 调用顺序，以及 OCR 结果回填设备字段、输入框校正和最终提交 payload 组装；lint 和 build:app 检查通过。
+    evidence:
+      - coffee-collector-app/tests/api-client.test.mjs
+      - reports/development/S3-uniapp-collection-flow.md
+
+  - id: S3-QUALITY-REVIEW-API
+    priority: P0
+    title: 质检审核和 Web 审核动作 API
+    status: PASS
+    implementation: backend/apps/coffee/models.py; backend/apps/coffee/migrations/0003_qualityreview.py; backend/apps/coffee/views.py; backend/apps/coffee/serializers.py; backend/apps/coffee/urls.py
+    verification: API 测试覆盖单条审核通过、单条退回、批量审核通过、批量退回，每条事件生成独立 QualityReview 记录并更新事件状态。
+    evidence:
+      - backend/apps/coffee/tests/test_review_api.py
+      - reports/development/S3-quality-review-api.md
+
+  - id: S3-UNIAPP-OFFLINE-MAP-UPLOAD-SERVICES
+    priority: P0
+    title: UniApp 现场圈地、离线草稿、水印和上传队列服务
+    status: PASS
+    implementation: coffee-collector-app/src/services/geometry.js; coffee-collector-app/src/services/draft-store.js; coffee-collector-app/src/services/watermark.js; coffee-collector-app/src/services/upload-queue.js; coffee-collector-app/scripts/build-app-check.mjs
+    verification: App 单元测试覆盖现场 Polygon GeoJSON 和亩数计算、水印 metadata、离线草稿保存恢复、照片上传/OCR/最终提交顺序；lint 和 build:app 检查通过。
+    evidence:
+      - coffee-collector-app/tests/offline-map-upload.test.mjs
+      - reports/development/S3-uniapp-offline-map-upload-services.md
+
+  - id: S3-UNIAPP-PAGE-SHELLS
+    priority: P0
+    title: UniApp 地图圈选、拍照水印、上传队列和退回修改页面入口
+    status: PASS
+    implementation: coffee-collector-app/pages.json; coffee-collector-app/src/pages/plot-map/index.vue; coffee-collector-app/src/pages/photo-capture/index.vue; coffee-collector-app/src/pages/upload-queue/index.vue; coffee-collector-app/src/pages/returns/index.vue
+    verification: App 单元测试覆盖 pages.json 已声明四个 App 现场支持页面，且页面文件已连接 geometry、watermark、upload queue、draft store 服务；lint 和 build:app 检查通过。
+    evidence:
+      - coffee-collector-app/tests/app-pages.test.mjs
+      - reports/development/S3-uniapp-page-shells.md
+
+  - id: S3-UNIAPP-INTERACTION-ADAPTERS
+    priority: P0
+    title: UniApp 地图圈选、相机拍照和上传重试交互适配层
+    status: PASS
+    implementation: coffee-collector-app/src/services/plot-drawing.js; coffee-collector-app/src/services/camera-capture.js; coffee-collector-app/src/services/upload-queue.js; coffee-collector-app/src/pages/plot-map/index.vue; coffee-collector-app/src/pages/photo-capture/index.vue; coffee-collector-app/src/pages/upload-queue/index.vue; coffee-collector-app/src/pages/returns/index.vue
+    verification: App 单元测试覆盖地图圈选追加/撤销/闭合并生成创建地块 payload、相机拍照结果生成带水印 metadata 的照片草稿、上传失败记录 failed 状态并支持 retry；lint、build:app 和后端 coffee SQLite 回归通过。
+    evidence:
+      - coffee-collector-app/tests/interaction-adapters.test.mjs
+      - reports/development/S3-uniapp-interaction-adapters.md
+
+  - id: S3-BACKEND-NUMBERING-SERVICE
+    priority: P0
+    title: 后端四级正式编号服务和 App 创建接口集成
+    status: PASS
+    implementation: backend/apps/coffee/numbering.py; backend/apps/coffee/serializers.py; backend/apps/coffee/views.py
+    verification: 后端 API 测试覆盖 App 创建地块、点位、事件和照片时省略编号由服务端生成 PL/PT/EV/PH 正式编号，并覆盖同日前缀序号递增；SQLite、MySQL、本地 App 测试、lint、build:app 均通过。
+    evidence:
+      - backend/apps/coffee/tests/test_numbering_api.py
+      - reports/development/S3-backend-numbering-service.md
+
+  - id: S3-UNIAPP-SERVER-ID-FLOW
+    priority: P0
+    title: UniApp 消费后端正式编号并写回草稿、上传队列和 Manifest
+    status: PASS
+    implementation: coffee-collector-app/src/services/collection-flow.js; coffee-collector-app/src/services/upload-queue.js
+    verification: App 单元测试覆盖创建地块、点位、事件时消费后端返回 PL/PT/EV 编号并写入本地草稿和提交 Manifest；照片初始化后消费 PH 编号，并写回上传队列、OCR 请求和最终 Manifest；App lint/build 和后端 SQLite 回归通过。
+    evidence:
+      - coffee-collector-app/tests/server-id-flow.test.mjs
+      - reports/development/S3-uniapp-server-id-flow.md
+
+  - id: S3-PHOTO-CHUNK-UPLOAD-API
+    priority: P0
+    title: 后端照片分片上传和断点续传 API 契约
+    status: PASS
+    implementation: backend/apps/coffee/models.py; backend/apps/coffee/migrations/0004_photouploadchunk.py; backend/apps/coffee/serializers.py; backend/apps/coffee/views.py; backend/apps/coffee/urls.py
+    verification: 后端 API 测试覆盖照片初始化返回上传会话、分片 PUT 幂等上传、重复分片一致性、complete 分片数量和 Hash 清单校验、不完整分片拒绝完成；SQLite、MySQL、迁移检查、App 测试、lint、build:app 均通过。
+    evidence:
+      - backend/apps/coffee/tests/test_photo_chunk_upload_api.py
+      - reports/development/S3-photo-chunk-upload-api.md
+
+  - id: S3-UNIAPP-CHUNK-UPLOAD-QUEUE
+    priority: P0
+    title: UniApp 上传队列分片上传调用和 complete Manifest
+    status: PASS
+    implementation: coffee-collector-app/src/services/api.js; coffee-collector-app/src/services/upload-queue.js
+    verification: App 单元测试覆盖 uploadPhotoChunk 客户端方法、上传队列按 init -> chunks -> complete -> submit 顺序调用、complete 携带 chunk_count 和 chunk_hashes；App lint/build 和后端 SQLite 回归通过。
+    evidence:
+      - coffee-collector-app/tests/upload-chunks.test.mjs
+      - reports/development/S3-uniapp-chunk-upload-queue.md
+
+  - id: S3-UNIAPP-WEAK-NETWORK-DIAGNOSTICS
+    priority: P0
+    title: UniApp 弱网上传暂停、续传诊断和队列 UI 状态
+    status: PASS
+    implementation: coffee-collector-app/src/services/upload-queue.js; coffee-collector-app/src/pages/upload-queue/index.vue
+    verification: App 单元测试覆盖断网时 drain 暂停且不调用上传接口、恢复网络后继续分片上传、诊断快照展示 pending/failed/completed、上传会话和分片进度；页面测试覆盖网络状态、暂停状态、暂停/继续/诊断入口；App lint/build 和后端 SQLite 回归通过。
+    evidence:
+      - coffee-collector-app/tests/upload-diagnostics.test.mjs
+      - reports/development/S3-uniapp-weak-network-diagnostics.md
+
+  - id: S3-APP-RETURN-RESUBMIT
+    priority: P0
+    title: App 退回修改重新提交和后端版本追加
+    status: PASS
+    implementation: backend/apps/coffee/views.py; backend/apps/coffee/urls.py; backend/apps/coffee/serializers.py; coffee-collector-app/src/services/api.js; coffee-collector-app/src/pages/returns/index.vue
+    verification: 后端 API 测试覆盖 returned 事件允许重新提交、事件版本递增、状态回到 submitted、新字段值以新 version 追加且原 version 保留、非 returned 事件拒绝重提；App 单元测试覆盖 resubmitEvent 调用 /resubmit/ 接口和退回页面连接重提状态；App lint/build 和后端 SQLite 回归通过。
+    evidence:
+      - backend/apps/coffee/tests/test_resubmit_api.py
+      - coffee-collector-app/tests/resubmit-flow.test.mjs
+      - reports/development/S3-app-return-resubmit.md
+
+  - id: S3-WEB-EVENT-DETAIL-REVIEW-PAGE
+    priority: P0
+    title: Web 采集事件详情和审核页面骨架
+    status: PASS
+    implementation: web/src/api/coffee/event.ts; web/src/views/coffee/event/index.vue
+    verification: Web 契约测试覆盖采集事件详情、单条审核通过、单条退回、批量审核通过、批量退回 API 封装，以及页面展示 Event_ID、Plot_ID、Point_ID、地块信息、图片资料、OCR 识别、设备采集数据、质检记录和批量审核入口；Web build 通过。
+    evidence:
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-web-event-detail-review-page.md
+
+  - id: S3-WEB-MENU-EVENT-LIST
+    priority: P0
+    title: Web coffee 菜单初始化和采集事件列表 API
+    status: PASS
+    implementation: backend/apps/coffee/menu.py; backend/apps/coffee/views.py; backend/apps/coffee/urls.py; backend/apps/coffee/serializers.py; web/src/api/coffee/event.ts; web/src/views/coffee/event/index.vue
+    verification: 后端测试覆盖 /api/coffee/events/ 按状态筛选并返回 Event_ID、Plot_ID、Point_ID、照片数、OCR 状态和质检状态摘要；菜单初始化测试覆盖幂等创建“咖啡采集/采集事件”菜单和查询、详情、审核、批量审核按钮权限；Web 契约测试覆盖 getEventList 和页面 onMounted 加载列表；后端 coffee 回归和 Web build 通过。
+    evidence:
+      - backend/apps/coffee/tests/test_web_event_list_api.py
+      - backend/apps/coffee/tests/test_menu_initialization.py
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-web-menu-event-list.md
+
+  - id: S3-WEB-PHOTO-OCR-REVIEW-PAGES
+    priority: P0
+    title: Web 照片资产审核和 OCR 校正页面/API
+    status: PASS
+    implementation: backend/apps/coffee/views.py; backend/apps/coffee/serializers.py; backend/apps/coffee/urls.py; web/src/api/coffee/photo.ts; web/src/api/coffee/ocr.ts; web/src/views/coffee/photo/index.vue; web/src/views/coffee/ocr/index.vue
+    verification: 后端测试覆盖 /api/coffee/photos/ 列表、照片审核通过、照片退回补拍、/api/coffee/ocr/jobs/ 列表和 Web OCR 校正版本追加；Web 契约测试覆盖 photo/ocr API 封装和页面关键字段/按钮；后端 coffee 回归和 Web build 通过。
+    evidence:
+      - backend/apps/coffee/tests/test_web_photo_ocr_api.py
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-web-photo-ocr-review-pages.md
+
+  - id: S3-WEB-PROVIDER-CONFIG
+    priority: P0
+    title: Web Provider 配置和本地连接测试入口
+    status: PASS
+    implementation: backend/apps/coffee/models.py; backend/apps/coffee/migrations/0005_providerconfig.py; backend/apps/coffee/serializers.py; backend/apps/coffee/views.py; backend/apps/coffee/urls.py; web/src/api/coffee/provider.ts; web/src/views/coffee/provider/index.vue
+    verification: 后端测试覆盖 Provider 配置创建、列表脱敏展示、连接测试写入 ProviderCallLog；Web 契约测试覆盖 Provider API 封装和页面关键字段/按钮；后端 coffee 回归和 Web build 通过。
+    evidence:
+      - backend/apps/coffee/tests/test_provider_config_api.py
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-web-provider-config.md
+
+  - id: S3-WEB-STATISTICS-EXPORT
+    priority: P0
+    title: Web 统计、绩效和导出任务 API/Page
+    status: PASS
+    implementation: backend/apps/coffee/models.py; backend/apps/coffee/migrations/0006_exportjob.py; backend/apps/coffee/serializers.py; backend/apps/coffee/views.py; backend/apps/coffee/urls.py; web/src/api/coffee/statistics.ts; web/src/api/coffee/export.ts; web/src/views/coffee/statistics/index.vue; web/src/views/coffee/export/index.vue
+    verification: 后端测试覆盖采集进度、质量统计、绩效统计、导出任务创建/列表/取消；Web 契约测试覆盖统计和导出 API 封装、导出页面关键字段/按钮、数据集包 Event_ID 创建、任务状态、文件路径、文件 SHA256 和复制路径入口；后端 coffee 回归和 Web build 通过。
+    evidence:
+      - backend/apps/coffee/tests/test_statistics_export_api.py
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-web-statistics-export.md
+      - reports/development/S3-web-export-dataset-package-ux.md
+
+  - id: S3-WEB-EXPORT-DATASET-PACKAGE-UX
+    priority: P1
+    title: Web 导出页数据集包任务体验
+    status: PASS
+    implementation: web/src/views/coffee/export/index.vue; web/src/api/coffee/export.ts; web/tests/coffee-web-contract.test.mjs
+    verification: TDD 契约测试覆盖导出页展示数据集包、Event_ID 输入、创建数据集包、任务状态筛选、文件路径、文件 SHA256、复制路径、取消入口和 coffee:export:Create/Cancel 权限；Web build 通过。真实下载和人工浏览验收未在本项宣称 PASS。
+    evidence:
+      - web/src/views/coffee/export/index.vue
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-web-export-dataset-package-ux.md
+
+  - id: S3-B-GRADE-RULE-SERVICE
+    priority: P0
+    title: B 级数量规则服务和 Web 配置入口
+    status: PASS
+    implementation: backend/apps/coffee/models.py; backend/apps/coffee/migrations/0007_bgraderule.py; backend/apps/coffee/serializers.py; backend/apps/coffee/views.py; backend/apps/coffee/urls.py; web/src/api/coffee/b-grade.ts; web/src/views/coffee/b-grade/index.vue
+    verification: 后端测试覆盖 B 级规则创建、列表和按任务统计已审核/已退回/已提交数量的即时校验；Web 契约测试覆盖 B 级规则 API 封装和页面关键字段/按钮；后端 coffee 回归和 Web build 通过。
+    evidence:
+      - backend/apps/coffee/tests/test_b_grade_rule_api.py
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-b-grade-rule-service.md
+
+  - id: S3-ROLE-MATRIX-PERMISSIONS
+    priority: P0
+    title: 采集员、审核员、管理员、查看员角色矩阵和 UI 权限可见性
+    status: PASS
+    implementation: backend/apps/coffee/menu.py; backend/apps/coffee/tests/test_menu_initialization.py; web/src/views/coffee/event/index.vue; web/src/views/coffee/photo/index.vue; web/src/views/coffee/ocr/index.vue; web/src/views/coffee/provider/index.vue; coffee-collector-app/src/services/role-visibility.js
+    verification: 后端测试覆盖四类业务角色、coffee 菜单、按钮权限和 data_range；Web 契约测试覆盖 v-permission 权限值；App 单元测试覆盖按角色过滤入口；后端 coffee 回归、App 全量测试和 Web build 通过。
+    evidence:
+      - backend/apps/coffee/tests/test_menu_initialization.py
+      - web/tests/coffee-web-contract.test.mjs
+      - coffee-collector-app/tests/role-visibility.test.mjs
+      - reports/development/S3-role-matrix-permissions.md
+
+  - id: S3-EVENT-DATA-SCOPE
+    priority: P0
+    title: Web 事件、照片、OCR、统计和导出数据范围过滤
+    status: PASS
+    implementation: backend/apps/coffee/views.py; backend/apps/coffee/tests/test_web_event_list_api.py; backend/apps/coffee/tests/test_web_photo_ocr_api.py; backend/apps/coffee/tests/test_statistics_export_api.py
+    verification: 后端测试覆盖 coffee_collector 只能查看本人 collector_id 采集事件，coffee_reviewer 在有所属部门时只能查看同 dept_belong_id 的采集事件、照片资产、OCR 任务、统计结果和导出任务，coffee_admin 可查看全部；后端 coffee 回归通过。
+    evidence:
+      - backend/apps/coffee/tests/test_web_event_list_api.py
+      - backend/apps/coffee/tests/test_web_photo_ocr_api.py
+      - backend/apps/coffee/tests/test_statistics_export_api.py
+      - reports/development/S3-event-data-scope.md
+
+  - id: S3-MOBILE-PHONE-LOGIN
+    priority: P0
+    title: App 手机号密码登录业务入口
+    status: PASS
+    implementation: backend/apps/coffee/views.py; backend/apps/coffee/urls.py; backend/apps/coffee/tests/test_mobile_login_api.py; coffee-collector-app/src/services/api.js; coffee-collector-app/tests/api-client.test.mjs
+    verification: 后端测试覆盖手机号密码登录返回 access/refresh、用户信息和角色信息；App 客户端测试覆盖登录请求使用 /api/coffee/auth/mobile-login/ 并保存 Token；后端 coffee 回归和 App 全量测试通过。
+    evidence:
+      - backend/apps/coffee/tests/test_mobile_login_api.py
+      - coffee-collector-app/tests/api-client.test.mjs
+      - reports/development/S3-mobile-phone-login.md
+
+  - id: S3-PADDLEOCR-SERVICE
+    priority: P0
+    title: PaddleOCR 本地服务骨架和设备采集模板解析
+    status: PASS
+    implementation: services/paddleocr/paddleocr_service/parser.py; services/paddleocr/paddleocr_service/service.py; services/paddleocr/service.py; services/paddleocr/Dockerfile; services/paddleocr/README.md
+    verification: 单元测试覆盖 device_reading_v1 模板解析 10 个设备采集字段、Provider 统一 payload 和健康检查 payload；当前为 mock 引擎模式，不声明真实 PaddleOCR 准确率。
+    evidence:
+      - services/paddleocr/tests/test_device_template.py
+      - reports/development/S3-paddleocr-compose.md
+
+  - id: S3-OCR-PROVIDER-ADAPTER
+    priority: P0
+    title: 后端 OCR Provider adapter 调用本地 PaddleOCR 契约
+    status: PASS
+    implementation: backend/apps/coffee/providers.py; backend/apps/coffee/views.py; backend/apps/coffee/tests/test_photo_ocr_api.py
+    verification: 后端 API 测试覆盖 App OCR 接口按 ProviderConfig 调用 PaddleOCR endpoint、提交 photo_id/template、映射字段值和置信度、写入 OCRResult 和 ProviderCallLog；后端 coffee 回归通过。
+    evidence:
+      - backend/apps/coffee/tests/test_photo_ocr_api.py
+      - backend/apps/coffee/providers.py
+      - reports/development/S3-ocr-provider-adapter.md
+
+  - id: S3-INFRA-COMPOSE-SKELETON
+    priority: P0
+    title: MySQL、Redis、Django、Celery、PaddleOCR Compose 静态契约
+    status: PASS
+    implementation: docker-compose.yml; services/paddleocr/Dockerfile
+    verification: 基础设施契约测试覆盖 MySQL 8、Redis、Django、Celery Worker、Celery Beat、PaddleOCR 服务、健康检查和持久卷；docker compose config 静态解析通过；未执行真实容器启动。
+    evidence:
+      - tests/test_infra_compose.py
+      - reports/development/S3-paddleocr-compose.md
+
+  - id: S3-VERIFY-ALL-SCRIPT
+    priority: P0
+    title: 本地一键验证脚本骨架
+    status: PASS
+    implementation: scripts/verify-all.sh; tests/test_verify_all_script.py
+    verification: TDD 测试覆盖 verify-all 脚本存在、可执行和 --list 输出包含后端、App、Web、PaddleOCR、Compose、交付门禁核心验证步骤；--list 命令可运行。
+    evidence:
+      - tests/test_verify_all_script.py
+      - scripts/verify-all.sh
+      - reports/development/S3-verify-all-script.md
+
+  - id: S3-DELIVERY-GATE-CHECKS
+    priority: P0
+    title: 安全静态检查和真实服务配置门禁脚本
+    status: PASS
+    implementation: scripts/check-delivery-gates.py; scripts/verify-all.sh; tests/test_delivery_gate_checks.py; tests/test_verify_all_script.py
+    verification: TDD 覆盖 check-delivery-gates.py 输出 schema_version、S3 stage、security_static_scan 和 real_provider_config_gate；verify-all --list 包含 delivery gate checks；脚本本地运行结果为 security_static_scan=PASS，real_provider_config_gate=BLOCKED。真实服务 Key 缺失被明确记录为 BLOCKED，不宣称真实服务 PASS。
+    evidence:
+      - scripts/check-delivery-gates.py
+      - scripts/verify-all.sh
+      - tests/test_delivery_gate_checks.py
+      - tests/test_verify_all_script.py
+      - reports/development/S3-delivery-gate-checks.md
+
+  - id: S3-DELIVERY-DOCUMENTATION-INDEX
+    priority: P0
+    title: 交付文档索引和交付材料路径检查
+    status: PASS
+    implementation: docs/delivery/交付文档索引.md; tests/test_delivery_documentation_index.py
+    verification: TDD 覆盖交付文档索引存在，并包含交付范围、阶段门禁、运行与验证、真实服务门禁、证据报告、BLOCKED 等章节；测试确认任务书、设计、数据库、API、UI、automation、runbook、verify-all、delivery gate 和关键 S3 报告路径均存在。
+    evidence:
+      - docs/delivery/交付文档索引.md
+      - tests/test_delivery_documentation_index.py
+      - reports/development/S3-delivery-documentation-index.md
+
+  - id: S3-FULL-LOCAL-VERIFY-DRY-RUN
+    priority: P0
+    title: S3 本地完整验证 dry run
+    status: PASS
+    implementation: scripts/verify-all.sh; backend/apps/coffee/tests; coffee-collector-app/tests; web/tests/coffee-web-contract.test.mjs; services/paddleocr/tests; tests
+    verification: scripts/verify-all.sh 完整运行通过，覆盖后端 coffee API 测试、App 单测/lint/build、Web 契约/build、PaddleOCR 服务测试、基础设施契约测试和 docker compose config 静态配置；存在基座 warning 但无失败。
+    evidence:
+      - scripts/verify-all.sh
+      - reports/development/S3-full-local-verify-dry-run.md
+
+  - id: S3-ANNOTATION-VERSIONING-API
+    priority: P1
+    title: 照片人工标注版本模型和 API
+    status: PASS
+    implementation: backend/apps/coffee/models.py; backend/apps/coffee/migrations/0008_photoannotation.py; backend/apps/coffee/serializers.py; backend/apps/coffee/views.py; backend/apps/coffee/urls.py; backend/apps/coffee/tests/test_photo_annotation_api.py
+    verification: TDD 测试覆盖照片标注首次创建 v1、同一 annotation_id 再次保存生成 v2、旧版本不覆盖、is_latest 切换，以及 Web 采集事件详情聚合返回照片标注版本；后端 coffee 回归通过。
+    evidence:
+      - backend/apps/coffee/tests/test_photo_annotation_api.py
+      - reports/development/S3-annotation-versioning-api.md
+
+  - id: S3-WEB-PHOTO-ANNOTATION-ENTRY
+    priority: P1
+    title: Web 照片标注入口和版本列表
+    status: PASS
+    implementation: web/src/api/coffee/photo.ts; web/src/views/coffee/photo/index.vue; web/tests/coffee-web-contract.test.mjs
+    verification: Web 契约测试覆盖照片标注 API 封装、照片资产页人工标注入口、保存标注按钮、版本列表和 coffee:photo:Annotate 权限；Web build 通过。
+    evidence:
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-web-photo-annotation-entry.md
+
+  - id: S3-WEB-PHOTO-ANNOTATION-CANVAS
+    priority: P1
+    title: Web 照片可视化矩形框标注画布
+    status: PASS
+    implementation: web/src/views/coffee/photo/index.vue; web/tests/coffee-web-contract.test.mjs
+    verification: TDD 契约测试覆盖照片预览标注画布、拖拽框选事件、bbox 几何生成入口、历史标注框叠加和标注保存入口；Web build 通过。
+    evidence:
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-web-photo-annotation-canvas.md
+
+  - id: S3-WEB-PHOTO-ANNOTATION-NATURAL-COORDS
+    priority: P1
+    title: Web 照片标注原图自然尺寸坐标映射
+    status: PASS
+    implementation: web/src/views/coffee/photo/index.vue; web/tests/coffee-web-contract.test.mjs
+    verification: TDD 契约测试覆盖图片 naturalWidth/naturalHeight 捕获、display_box 和 natural_box 双坐标输出、bbox 自然尺寸映射入口；Web build 通过。
+    evidence:
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-web-photo-annotation-natural-coords.md
+
+  - id: S3-WEB-PHOTO-ANNOTATION-SCREENSHOT
+    priority: P1
+    title: Web 照片标注画布浏览器截图验证
+    status: PASS
+    implementation: scripts/verify-photo-annotation-canvas.mjs; tests/test_photo_annotation_visual_script.py
+    verification: Playwright 浏览器 smoke 脚本加载 mock 照片标注页面，执行拖拽框选，校验 display_box 和 natural_box，并输出 PNG/JSON 证据；脚本契约测试通过。
+    evidence:
+      - scripts/verify-photo-annotation-canvas.mjs
+      - tests/test_photo_annotation_visual_script.py
+      - reports/development/assets/photo-annotation-canvas.png
+      - reports/development/assets/photo-annotation-canvas.json
+      - reports/development/S3-web-photo-annotation-screenshot.md
 
   - id: P1-ANNOTATION-VERSIONING
     priority: P1
     title: 人工框选和标签版本
     status: NOT_VERIFIED
-    implementation: 标注模型和 Web 标注页待开发
-    verification: 标注版本测试、人工标注流程测试。
-    evidence: []
+    implementation: backend/apps/coffee/models.py 已实现 PhotoAnnotation 版本表；backend/apps/coffee/views.py 已实现照片标注版本列表/创建 API，并在采集事件详情中聚合照片标注版本；web/src/views/coffee/photo/index.vue 已实现照片资产页标注入口、版本列表、可视化矩形框标注画布和原图自然尺寸坐标映射；真实图片人工标注流程待验收
+    verification: 后端自动测试已覆盖标注版本 API 和详情聚合；Web 契约测试和 build 已覆盖标注入口、版本列表、矩形框画布和自然尺寸坐标映射；真实图片标注、浏览器人工操作和业务验收待完成。
+    evidence:
+      - backend/apps/coffee/tests/test_photo_annotation_api.py
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-annotation-versioning-api.md
+      - reports/development/S3-web-photo-annotation-entry.md
+      - reports/development/S3-web-photo-annotation-canvas.md
+      - reports/development/S3-web-photo-annotation-natural-coords.md
+      - reports/development/S3-web-photo-annotation-screenshot.md
 
   - id: P1-METRIC-CENTER
     priority: P1
     title: 统计口径中心
     status: NOT_VERIFIED
-    implementation: 统计配置和报表服务待开发
-    verification: 指标口径单测、报表人工核对。
-    evidence: []
+    implementation: backend/apps/coffee/models.py 已实现 MetricDefinition 版本化统计口径表；backend/apps/coffee/views.py 已实现口径配置 API，并让进度、质量、绩效统计接口返回当前启用最新口径元数据；web/src/api/coffee/metric.ts 和 web/src/views/coffee/statistics/index.vue 已实现 Web 统计口径配置入口；真实业务报表口径人工核对待完成
+    verification: 后端自动测试已覆盖口径版本递增、口径列表和统计进度响应携带最新口径元数据；Web 契约测试和 build 已覆盖口径 API 封装、统计页口径中心、版本列表、新增口径和复制版本入口；真实报表口径人工核对待完成。
+    evidence:
+      - backend/apps/coffee/tests/test_metric_definition_api.py
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-metric-definition-center.md
+      - reports/development/S3-web-metric-center-page.md
+
+  - id: S3-METRIC-DEFINITION-CENTER
+    priority: P1
+    title: 统计口径中心后端模型、API 和统计响应元数据
+    status: PASS
+    implementation: backend/apps/coffee/models.py; backend/apps/coffee/migrations/0009_metricdefinition.py; backend/apps/coffee/serializers.py; backend/apps/coffee/views.py; backend/apps/coffee/urls.py
+    verification: TDD 覆盖同一 metric_code 多次保存生成递增版本、口径列表返回历史版本、统计进度接口只返回启用的最新口径元数据；coffee 后端全量测试通过。
+    evidence:
+      - backend/apps/coffee/tests/test_metric_definition_api.py
+      - reports/development/S3-metric-definition-center.md
+
+  - id: S3-WEB-METRIC-CENTER-PAGE
+    priority: P1
+    title: Web 统计口径中心配置入口
+    status: PASS
+    implementation: web/src/api/coffee/metric.ts; web/src/views/coffee/statistics/index.vue; web/tests/coffee-web-contract.test.mjs
+    verification: TDD 契约测试覆盖 MetricDefinition API 封装、统计页口径中心、指标编码、计算口径、口径版本、复制版本、启停、新增口径和权限入口；Web build 通过。
+    evidence:
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-web-metric-center-page.md
 
   - id: P1-OFFLINE-PACKAGE-INDEX
     priority: P1
     title: 完整数据包离线浏览索引
     status: NOT_VERIFIED
-    implementation: 导出包索引和离线浏览元数据待开发
-    verification: 导出包结构测试、离线浏览人工测试。
-    evidence: []
+    implementation: backend/apps/coffee/serializers.py 已在采集事件详情中生成 offline_package_index，索引覆盖事件、地块、点位、最终字段、测量记录、照片文件引用、OCR、标注、质检和审计摘要；backend/apps/coffee/offline_package.py 已实现本地离线包目录、manifest.json、index.html 和受控图片副本生成；backend/apps/coffee/export_jobs.py 已实现 dataset_package 导出任务本地处理器；backend/apps/coffee/tasks.py 已实现 coffee.run_export_job Celery 任务入口；backend/apps/coffee/views.py 已实现 Web 创建 dataset_package 导出后 transaction.on_commit 入队；scripts/verify-offline-package-browser.mjs 已实现本地浏览器 smoke；真实人工离线浏览和真实 Worker 队列执行待完成
+    verification: 后端自动测试已覆盖事件详情返回离线包索引、manifest_hash、照片文件引用、OCR 资源和资源计数，离线包 manifest.json/index.html 文件生成，水印图复制为 photos/controlled 受控副本并回写 Manifest，dataset_package 导出任务生成离线包并回写 file_path/file_sha256，Celery 任务入口直接调用并回写导出任务状态，以及 Web 创建 dataset_package 导出后提交事务再调用 run_export_job.delay；浏览器 smoke 已打开本地 index.html 并生成截图/JSON 证据；真实人工验收和真实 Celery Worker/Redis 队列验收待完成。
+    evidence:
+      - backend/apps/coffee/tests/test_web_event_detail_api.py
+      - reports/development/S3-offline-package-index-api.md
+      - reports/development/S3-offline-package-file-builder.md
+      - reports/development/S3-offline-package-controlled-photos.md
+      - reports/development/S3-offline-package-export-job.md
+      - reports/development/S3-offline-package-celery-task.md
+      - reports/development/S3-offline-package-export-enqueue.md
+      - reports/development/S3-offline-package-browser-smoke.md
+
+  - id: S3-OFFLINE-PACKAGE-INDEX-API
+    priority: P1
+    title: 采集事件离线包索引 Manifest
+    status: PASS
+    implementation: backend/apps/coffee/serializers.py; backend/apps/coffee/tests/test_web_event_detail_api.py
+    verification: TDD 覆盖 Web 事件详情返回 offline_package_index，包含 package_version、event_id、manifest_hash、地块、点位、照片 sha256、原图/水印文件引用、OCR 结果、资源计数和 index_hash；coffee 后端全量测试通过。
+    evidence:
+      - backend/apps/coffee/tests/test_web_event_detail_api.py
+      - reports/development/S3-offline-package-index-api.md
+
+  - id: S3-OFFLINE-PACKAGE-FILE-BUILDER
+    priority: P1
+    title: 离线数据包 manifest.json 和浏览器 index.html 生成
+    status: PASS
+    implementation: backend/apps/coffee/offline_package.py; backend/apps/coffee/tests/test_web_event_detail_api.py
+    verification: TDD 覆盖 build_event_offline_package 输出事件目录、manifest.json、index.html、文件清单和 package_hash；manifest 内嵌 offline_package_index，HTML 包含 Event_ID 和离线数据包摘要；coffee 后端全量测试通过。
+    evidence:
+      - backend/apps/coffee/tests/test_web_event_detail_api.py
+      - reports/development/S3-offline-package-file-builder.md
+
+  - id: S3-OFFLINE-PACKAGE-CONTROLLED-PHOTOS
+    priority: P1
+    title: 离线数据包受控图片副本
+    status: PASS
+    implementation: backend/apps/coffee/offline_package.py; backend/apps/coffee/tests/test_web_event_detail_api.py
+    verification: TDD 覆盖 build_event_offline_package(media_root=...) 优先复制水印图到 photos/controlled/{Photo_ID}.jpg，返回文件清单，Manifest offline_package_index 写入 files.controlled，HTML 指向受控副本；coffee 后端全量测试通过。
+    evidence:
+      - backend/apps/coffee/tests/test_web_event_detail_api.py
+      - reports/development/S3-offline-package-controlled-photos.md
+
+  - id: S3-OFFLINE-PACKAGE-EXPORT-JOB
+    priority: P1
+    title: 数据集包导出任务本地处理器
+    status: PASS
+    implementation: backend/apps/coffee/export_jobs.py; backend/apps/coffee/tests/test_statistics_export_api.py
+    verification: TDD 覆盖 dataset_package ExportJob 调用 process_export_job 后生成离线包 manifest.json/index.html，任务状态更新为 success，progress=100，并写入 file_path 和 file_sha256；coffee 后端全量测试通过。
+    evidence:
+      - backend/apps/coffee/tests/test_statistics_export_api.py
+      - reports/development/S3-offline-package-export-job.md
+
+  - id: S3-OFFLINE-PACKAGE-CELERY-TASK
+    priority: P1
+    title: 数据集包导出 Celery 任务入口
+    status: PASS
+    implementation: backend/apps/coffee/tasks.py; backend/apps/coffee/export_jobs.py; backend/apps/coffee/tests/test_statistics_export_api.py
+    verification: TDD 覆盖 coffee.run_export_job 任务入口直接处理 dataset_package ExportJob，生成离线包 manifest.json，回写 status=success、progress=100、file_path 和 file_sha256，并确认任务对象具备 delay 调度入口；coffee 后端全量测试通过。真实 Celery Worker/Redis 队列执行未在本地门禁中宣称 PASS。
+    evidence:
+      - backend/apps/coffee/tasks.py
+      - backend/apps/coffee/tests/test_statistics_export_api.py
+      - reports/development/S3-offline-package-celery-task.md
+
+  - id: S3-OFFLINE-PACKAGE-EXPORT-ENQUEUE
+    priority: P1
+    title: Web 创建数据集包导出后提交事务入队
+    status: PASS
+    implementation: backend/apps/coffee/views.py; backend/apps/coffee/tasks.py; backend/apps/coffee/tests/test_statistics_export_api.py
+    verification: TDD 覆盖 Web 导出创建接口在 export_type=dataset_package 时创建 queued ExportJob，并在 transaction.on_commit 后调用 run_export_job.delay(job_code)；普通导出创建、取消、统计和离线包导出回归通过。该证据使用 mock 验证任务入队调用，不宣称真实 Worker/Redis 队列执行 PASS。
+    evidence:
+      - backend/apps/coffee/views.py
+      - backend/apps/coffee/tasks.py
+      - backend/apps/coffee/tests/test_statistics_export_api.py
+      - reports/development/S3-offline-package-export-enqueue.md
+
+  - id: S3-OFFLINE-PACKAGE-BROWSER-SMOKE
+    priority: P1
+    title: 离线数据包浏览器打开 smoke 验证
+    status: PASS
+    implementation: scripts/verify-offline-package-browser.mjs; tests/test_offline_package_browser_smoke_script.py
+    verification: 契约测试覆盖脚本声明 Playwright、manifest.json、index.html、离线数据包文本和截图/JSON 证据；浏览器 smoke 实际打开本地 index.html，校验 Event_ID、Manifest Hash 和受控图片引用，并生成 PNG/JSON 证据。
+    evidence:
+      - tests/test_offline_package_browser_smoke_script.py
+      - scripts/verify-offline-package-browser.mjs
+      - reports/development/assets/offline-package-browser.png
+      - reports/development/assets/offline-package-browser.json
+      - reports/development/S3-offline-package-browser-smoke.md
 
   - id: P1-REAL-PROVIDER-CONFIG
     priority: P1
     title: 高德、聚合天气、华为 OCR 配置、Mock 和连接测试入口
     status: NOT_VERIFIED
-    implementation: Provider 配置页和后端连接测试待开发
+    implementation: backend/apps/coffee/models.py 已实现 ProviderConfig；backend/apps/coffee/views.py 已实现配置列表/创建和本地连接测试；web/src/views/coffee/provider/index.vue 已实现配置页骨架；真实高德、聚合天气、华为 OCR 配置和连接测试仍待真实 Key
     verification: Mock 连接测试；缺真实 Key 时真实验证 BLOCKED。
-    evidence: []
+    evidence:
+      - backend/apps/coffee/tests/test_provider_config_api.py
+      - reports/development/S3-web-provider-config.md
 
   - id: P1-ALT-MAP-PROVIDERS
     priority: P1
     title: 腾讯和百度地图 Provider 可替换架构
     status: NOT_VERIFIED
-    implementation: Provider 契约待设计，适配器待开发
-    verification: 契约测试和启停配置测试。
-    evidence: []
+    implementation: backend/apps/coffee/providers.py 已实现 tencent_map 和 baidu_map 本地 Provider 契约，包含 reverse_geocode、boundary_polygon、area_recheck 能力清单和坐标系声明；backend/apps/coffee/views.py 已在 Provider 连接测试中返回地图 Provider 本地契约并写入 ProviderCallLog；web/src/views/coffee/provider/index.vue 已实现腾讯地图/百度地图 mock 配置入口、地图 Provider 筛选和地图能力展示；真实腾讯/百度地图 Key、真实接口调用和真机地图行为待 G4/G5 验收
+    verification: 后端自动测试覆盖 tencent_map/baidu_map 配置创建、api_key 脱敏、连接测试返回地图能力清单和 ProviderCallLog；Web 契约测试覆盖地图 Provider、腾讯地图、百度地图、能力清单和创建入口；后端 coffee 回归通过。真实腾讯/百度地图服务验收待完成。
+    evidence:
+      - backend/apps/coffee/providers.py
+      - backend/apps/coffee/tests/test_provider_config_api.py
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-alt-map-provider-contracts.md
+
+  - id: S3-ALT-MAP-PROVIDER-CONTRACTS
+    priority: P1
+    title: 腾讯和百度地图 Provider 本地契约、启停配置和 Web 入口
+    status: PASS
+    implementation: backend/apps/coffee/providers.py; backend/apps/coffee/views.py; backend/apps/coffee/tests/test_provider_config_api.py; web/src/views/coffee/provider/index.vue; web/tests/coffee-web-contract.test.mjs
+    verification: TDD 覆盖 tencent_map 和 baidu_map 的 map Provider 配置创建、敏感 api_key 脱敏、本地连接测试返回 provider_type=map、reverse_geocode、boundary_polygon、area_recheck 能力清单、ProviderCallLog 记录；Web 契约测试覆盖地图 Provider 筛选、腾讯地图/百度地图 mock 配置入口和地图能力展示；后端 coffee 回归通过。真实地图 Key 和真实服务调用未宣称 PASS。
+    evidence:
+      - backend/apps/coffee/providers.py
+      - backend/apps/coffee/tests/test_provider_config_api.py
+      - web/src/views/coffee/provider/index.vue
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-alt-map-provider-contracts.md
 
   - id: P1-ADVANCED-PERFORMANCE-EXPORT
     priority: P1
     title: 更完整的绩效统计和导出筛选
     status: NOT_VERIFIED
-    implementation: Web 绩效页和导出任务待开发
-    verification: 统计口径测试、导出筛选测试。
-    evidence: []
+    implementation: web/src/views/coffee/statistics/index.vue 已实现绩效统计和统计口径中心；web/src/views/coffee/export/index.vue 已实现任务状态/类型筛选、数据集包 Event_ID 创建、任务状态、文件路径、文件 SHA256、复制路径和取消入口；真实文件下载审计、更多高级筛选和人工导出验收待完成
+    verification: Web 契约测试和 build 已覆盖统计口径、导出筛选和数据集包任务体验；真实下载审计和人工业务验收待完成。
+    evidence:
+      - backend/apps/coffee/tests/test_statistics_export_api.py
+      - web/tests/coffee-web-contract.test.mjs
+      - reports/development/S3-web-statistics-export.md
+      - reports/development/S3-web-export-dataset-package-ux.md

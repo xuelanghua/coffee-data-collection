@@ -1,0 +1,17 @@
+{
+  "name": "普洱咖啡采集",
+  "appid": "__UNI__PUER_COFFEE",
+  "description": "普洱咖啡数据现场采集端",
+  "versionName": "0.1.0",
+  "versionCode": "1",
+  "app-plus": {
+    "permissions": {
+      "Camera": {
+        "description": "用于拍摄现场分类照片和设备采集屏幕"
+      },
+      "Location": {
+        "description": "用于现场地块圈选、点位定位和照片水印"
+      }
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "pages": [
+    {
+      "path": "src/pages/login/index",
+      "style": {
+        "navigationBarTitleText": "采集登录"
+      }
+    },
+    {
+      "path": "src/pages/collect/index",
+      "style": {
+        "navigationBarTitleText": "现场采集"
+      }
+    },
+    {
+      "path": "src/pages/plot-map/index",
+      "style": {
+        "navigationBarTitleText": "圈选地块"
+      }
+    },
+    {
+      "path": "src/pages/photo-capture/index",
+      "style": {
+        "navigationBarTitleText": "拍照水印"
+      }
+    },
+    {
+      "path": "src/pages/upload-queue/index",
+      "style": {
+        "navigationBarTitleText": "上传队列"
+      }
+    },
+    {
+      "path": "src/pages/returns/index",
+      "style": {
+        "navigationBarTitleText": "退回修改"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "普洱咖啡采集",
+    "navigationBarBackgroundColor": "#f6f7f2",
+    "backgroundColor": "#f6f7f2"
+  }
+}

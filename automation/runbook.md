@@ -9,7 +9,7 @@
 3. `automation/acceptance.yaml`
 4. `automation/runbook.md`
 5. `automation/state.json` 中 `last_report` 指向的报告
-6. `docs/普洱咖啡数据采集系统开发任务书-UAIDF重写版.md`
+6. `docs/manual/普洱咖啡数据采集系统开发任务书-UAIDF重写版.md`
 7. `docs/design/`、`docs/ui/`、`docs/api/` 中与当前阶段相关的文件
 8. `git status --short`
 
