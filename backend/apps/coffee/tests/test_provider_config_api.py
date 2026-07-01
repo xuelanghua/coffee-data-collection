@@ -76,6 +76,56 @@ class CoffeeProviderConfigApiTests(APITestCase):
         self.assertEqual(result["provider_name"], "manual")
         self.assertEqual(ProviderCallLog.objects.filter(provider_type="ocr", provider_name="manual", target_type="provider_config").count(), 1)
 
+    def test_provider_config_update_toggle_and_delete_support_web_form_actions(self):
+        create_response = self.client.post(
+            "/api/coffee/provider-configs/",
+            {
+                "provider_type": "map",
+                "provider_name": "amap",
+                "display_name": "高德地图",
+                "enabled": True,
+                "priority": 10,
+                "timeout_ms": 3000,
+                "rate_limit_per_minute": 120,
+                "config_json": {"api_key": "real-map-key"},
+                "secret_fields": ["api_key"],
+            },
+            format="json",
+        )
+        provider_id = create_response.data["data"]["id"]
+
+        update_response = self.client.put(
+            f"/api/coffee/provider-configs/{provider_id}/",
+            {
+                "provider_type": "map",
+                "provider_name": "amap",
+                "display_name": "高德地图正式配置",
+                "enabled": True,
+                "priority": 5,
+                "timeout_ms": 5000,
+                "rate_limit_per_minute": 90,
+                "config_json": {"api_key": "new-real-map-key"},
+                "secret_fields": ["api_key"],
+            },
+            format="json",
+        )
+
+        self.assertEqual(update_response.status_code, 200)
+        updated = update_response.data["data"]
+        self.assertEqual(updated["display_name"], "高德地图正式配置")
+        self.assertEqual(updated["priority"], 5)
+        self.assertEqual(updated["masked_config"]["api_key"], "********")
+        self.assertNotIn("new-real-map-key", str(updated))
+
+        toggle_response = self.client.post(f"/api/coffee/provider-configs/{provider_id}/toggle/", {"enabled": False}, format="json")
+        self.assertEqual(toggle_response.status_code, 200)
+        self.assertEqual(toggle_response.data["data"]["enabled"], False)
+
+        delete_response = self.client.delete(f"/api/coffee/provider-configs/{provider_id}/")
+        self.assertEqual(delete_response.status_code, 200)
+        list_response = self.client.get("/api/coffee/provider-configs/")
+        self.assertEqual(list_response.data["data"]["count"], 0)
+
     def test_tencent_and_baidu_map_provider_contracts_are_testable_without_real_keys(self):
         created_ids = []
         for provider_name, display_name in [("tencent_map", "腾讯地图"), ("baidu_map", "百度地图")]:

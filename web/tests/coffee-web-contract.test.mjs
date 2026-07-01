@@ -48,6 +48,13 @@ test("coffee web event page exposes list, detail sections and batch review actio
   assert.match(source, /质检记录/);
   assert.match(source, /批量通过/);
   assert.match(source, /批量退回/);
+  assert.match(source, /审核弹窗/);
+  assert.match(source, /reviewDialogVisible/);
+  assert.match(source, /return_items/);
+  assert.match(source, /header-actions/);
+  assert.match(source, /filter-form/);
+  assert.match(source, /:gutter="20"/);
+  assert.match(source, /padding:\s*20px/);
   assert.match(source, /getEventDetail/);
   assert.match(source, /loadEventList/);
   assert.match(source, /onMounted/);
@@ -96,6 +103,10 @@ test("coffee web photo api and page expose photo review workflow", () => {
   assert.match(pageSource, /updateAnnotationGeometryFromCanvas/);
   assert.match(pageSource, /审核通过/);
   assert.match(pageSource, /退回补拍/);
+  assert.match(pageSource, /审核弹窗/);
+  assert.match(pageSource, /reviewDialogVisible/);
+  assert.match(pageSource, /filter-form/);
+  assert.match(pageSource, /padding:\s*20px/);
   assert.match(pageSource, /getPhotoList/);
   assert.match(pageSource, /reviewPhoto/);
   assert.match(pageSource, /getPhotoAnnotations/);
@@ -121,6 +132,11 @@ test("coffee web ocr api and page expose correction workflow", () => {
   assert.match(pageSource, /置信度/);
   assert.match(pageSource, /人工值/);
   assert.match(pageSource, /修正原因/);
+  assert.match(pageSource, /校正弹窗/);
+  assert.match(pageSource, /correctionDialogVisible/);
+  assert.match(pageSource, /filter-form/);
+  assert.match(pageSource, /gap:\s*20px/);
+  assert.match(pageSource, /padding:\s*20px/);
   assert.match(pageSource, /getOcrJobs/);
   assert.match(pageSource, /saveOcrCorrection/);
   assert.match(pageSource, /v-permission="'coffee:ocr:Correct'"/);
@@ -131,8 +147,13 @@ test("coffee web provider api and page expose safe provider configuration workfl
   const apiSource = readFileSync(providerApiPath, "utf8");
   assert.match(apiSource, /getProviderConfigs/);
   assert.match(apiSource, /createProviderConfig/);
+  assert.match(apiSource, /updateProviderConfig/);
+  assert.match(apiSource, /deleteProviderConfig/);
+  assert.match(apiSource, /toggleProviderConfig/);
   assert.match(apiSource, /testProviderConfig/);
   assert.match(apiSource, /\/api\/coffee\/provider-configs\//);
+  assert.match(apiSource, /\/api\/coffee\/provider-configs\/\$\{providerId\}\//);
+  assert.match(apiSource, /\/api\/coffee\/provider-configs\/\$\{providerId\}\/toggle\//);
   assert.match(apiSource, /\/api\/coffee\/provider-configs\/\$\{providerId\}\/test\//);
 
   assert.equal(existsSync(providerPagePath), true);
@@ -148,12 +169,25 @@ test("coffee web provider api and page expose safe provider configuration workfl
   assert.match(pageSource, /脱敏 Key/);
   assert.match(pageSource, /连接测试/);
   assert.match(pageSource, /启用状态/);
+  assert.match(pageSource, /配置弹窗/);
+  assert.match(pageSource, /providerDialogVisible/);
+  assert.match(pageSource, /新增配置/);
+  assert.match(pageSource, /编辑/);
+  assert.match(pageSource, /设置密钥/);
+  assert.match(pageSource, /删除/);
+  assert.match(pageSource, /启停/);
+  assert.match(pageSource, /filter-form/);
+  assert.match(pageSource, /gap:\s*20px/);
+  assert.match(pageSource, /padding:\s*20px/);
   assert.match(pageSource, /getProviderConfigs/);
   assert.match(pageSource, /createProviderConfig/);
+  assert.match(pageSource, /updateProviderConfig/);
+  assert.match(pageSource, /deleteProviderConfig/);
+  assert.match(pageSource, /toggleProviderConfig/);
   assert.match(pageSource, /testProviderConfig/);
-  assert.match(pageSource, /createTencentMapProvider/);
-  assert.match(pageSource, /createBaiduMapProvider/);
   assert.match(pageSource, /v-permission="'coffee:provider:Create'"/);
+  assert.match(pageSource, /v-permission="'coffee:provider:Edit'"/);
+  assert.match(pageSource, /v-permission="'coffee:provider:Delete'"/);
   assert.match(pageSource, /v-permission="'coffee:provider:Test'"/);
 });
 
@@ -194,6 +228,10 @@ test("coffee web metric center api and statistics page expose metric definitions
   assert.match(pageSource, /复制版本/);
   assert.match(pageSource, /启停/);
   assert.match(pageSource, /新增口径/);
+  assert.match(pageSource, /口径弹窗/);
+  assert.match(pageSource, /metricDialogVisible/);
+  assert.match(pageSource, /filter-form/);
+  assert.match(pageSource, /padding:\s*20px/);
   assert.match(pageSource, /metric_definitions/);
   assert.match(pageSource, /getMetricDefinitions/);
   assert.match(pageSource, /createMetricDefinition/);
@@ -221,6 +259,10 @@ test("coffee web export api and page expose export job workflow", () => {
   assert.match(pageSource, /任务状态/);
   assert.match(pageSource, /复制路径/);
   assert.match(pageSource, /创建数据集包/);
+  assert.match(pageSource, /导出弹窗/);
+  assert.match(pageSource, /exportDialogVisible/);
+  assert.match(pageSource, /filter-form/);
+  assert.match(pageSource, /padding:\s*20px/);
   assert.match(pageSource, /ExportJob\.TYPE_DATASET_PACKAGE|dataset_package/);
   assert.match(pageSource, /取消/);
   assert.match(pageSource, /getExportJobs/);
@@ -237,8 +279,13 @@ test("coffee web b grade rule api and page expose rule simulation workflow", () 
   const apiSource = readFileSync(bGradeApiPath, "utf8");
   assert.match(apiSource, /getBGradeRules/);
   assert.match(apiSource, /createBGradeRule/);
+  assert.match(apiSource, /updateBGradeRule/);
+  assert.match(apiSource, /deleteBGradeRule/);
+  assert.match(apiSource, /toggleBGradeRule/);
   assert.match(apiSource, /checkBGradeRule/);
   assert.match(apiSource, /\/api\/coffee\/b-grade-rules\//);
+  assert.match(apiSource, /\/api\/coffee\/b-grade-rules\/\$\{ruleCode\}\//);
+  assert.match(apiSource, /\/api\/coffee\/b-grade-rules\/\$\{ruleCode\}\/toggle\//);
   assert.match(apiSource, /\/api\/coffee\/b-grade-rules\/\$\{ruleCode\}\/check\//);
 
   assert.equal(existsSync(bGradePagePath), true);
@@ -247,7 +294,111 @@ test("coffee web b grade rule api and page expose rule simulation workflow", () 
   assert.match(pageSource, /规则名称/);
   assert.match(pageSource, /阻断级别/);
   assert.match(pageSource, /模拟检查/);
+  assert.match(pageSource, /规则弹窗/);
+  assert.match(pageSource, /ruleDialogVisible/);
+  assert.match(pageSource, /新增规则/);
+  assert.match(pageSource, /编辑/);
+  assert.match(pageSource, /删除/);
+  assert.match(pageSource, /启停/);
+  assert.match(pageSource, /filter-form/);
+  assert.match(pageSource, /gap:\s*20px/);
+  assert.match(pageSource, /padding:\s*20px/);
   assert.match(pageSource, /getBGradeRules/);
   assert.match(pageSource, /createBGradeRule/);
+  assert.match(pageSource, /updateBGradeRule/);
+  assert.match(pageSource, /deleteBGradeRule/);
+  assert.match(pageSource, /toggleBGradeRule/);
   assert.match(pageSource, /checkBGradeRule/);
+});
+
+test("coffee web configuration dialogs include examples and operator guidance", () => {
+  const eventSource = readFileSync(pagePath, "utf8");
+  assert.match(eventSource, /退回项说明/);
+  assert.match(eventSource, /示例：照片模糊/);
+
+  const photoSource = readFileSync(photoPagePath, "utf8");
+  assert.match(photoSource, /标注几何示例/);
+  assert.match(photoSource, /审核说明示例/);
+
+  const ocrSource = readFileSync(ocrPagePath, "utf8");
+  assert.match(ocrSource, /设备字段示例/);
+  assert.match(ocrSource, /修正原因示例/);
+
+  const providerSource = readFileSync(providerPagePath, "utf8");
+  assert.match(providerSource, /配置示例/);
+  assert.match(providerSource, /高德地图示例/);
+  assert.match(providerSource, /聚合天气示例/);
+  assert.match(providerSource, /PaddleOCR 示例/);
+  assert.match(providerSource, /secret_fields/);
+
+  const exportSource = readFileSync(exportPagePath, "utf8");
+  assert.match(exportSource, /过滤条件示例/);
+  assert.match(exportSource, /按审核通过导出/);
+  assert.match(exportSource, /数据集包只需要 Event_ID/);
+
+  const statisticsSource = readFileSync(statisticsPagePath, "utf8");
+  assert.match(statisticsSource, /计算口径示例/);
+  assert.match(statisticsSource, /保存会生成新版本/);
+
+  const bGradeSource = readFileSync(bGradePagePath, "utf8");
+  assert.match(bGradeSource, /规则配置说明/);
+  assert.match(bGradeSource, /最小数量和最大数量至少填写一个/);
+});
+
+test("coffee web action buttons follow framework size and theme color", () => {
+  const pagePaths = [pagePath, photoPagePath, ocrPagePath, providerPagePath, statisticsPagePath, exportPagePath, bGradePagePath];
+  for (const path of pagePaths) {
+    const source = readFileSync(path, "utf8");
+    const buttons = source.match(/<el-button[^>]*>/g) || [];
+    assert.ok(buttons.length > 0, `${path.pathname} should contain buttons`);
+    for (const button of buttons) {
+      assert.doesNotMatch(button, /\ssize="small"/, `${path.pathname} should use framework default button size: ${button}`);
+      assert.doesNotMatch(button, /\stype="(success|warning|danger)"/, `${path.pathname} should use theme-aware primary/default buttons: ${button}`);
+    }
+  }
+});
+
+test("coffee provider page uses adaptive tiled panels with visible gaps", () => {
+  const source = readFileSync(providerPagePath, "utf8");
+
+  assert.match(source, /grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(520px,\s*1fr\)\)/);
+  assert.match(source, /align-items:\s*stretch/);
+  assert.match(source, /gap:\s*20px/);
+  assert.match(source, /\.panel\s*\{[\s\S]*height:\s*100%/);
+  assert.match(source, /\.side-panel\s*\{[\s\S]*min-height:\s*360px/);
+  assert.doesNotMatch(source, /grid-template-columns:\s*minmax\(0,\s*1fr\)\s+360px/);
+});
+
+test("coffee pages keep visible 20px gaps between adjacent panels", () => {
+  const tiledPagePaths = [photoPagePath, ocrPagePath, providerPagePath];
+  const stackedPagePaths = [statisticsPagePath, bGradePagePath];
+
+  for (const path of tiledPagePaths) {
+    const source = readFileSync(path, "utf8");
+    assert.match(source, /grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(520px,\s*1fr\)\)/, `${path.pathname} should use adaptive tiled panel columns`);
+    assert.match(source, /align-items:\s*stretch/, `${path.pathname} should stretch panels in each tile`);
+    assert.match(source, /gap:\s*20px/, `${path.pathname} should keep 20px panel gap`);
+    assert.match(source, /padding:\s*20px/, `${path.pathname} should keep 20px page padding`);
+    assert.match(source, /\.panel\s*\{[\s\S]*min-width:\s*0[\s\S]*height:\s*100%/, `${path.pathname} panels should fill their grid cells`);
+  }
+
+  for (const path of stackedPagePaths) {
+    const source = readFileSync(path, "utf8");
+    assert.match(source, /gap:\s*20px/, `${path.pathname} should keep 20px page gap`);
+    assert.match(source, /padding:\s*20px/, `${path.pathname} should keep 20px page padding`);
+    assert.match(source, /\.panel\s*\+\s*\.panel\s*\{[\s\S]*margin-top:\s*20px/, `${path.pathname} stacked panels should have an explicit 20px vertical gap`);
+  }
+});
+
+test("coffee filter forms align labels inputs and action buttons on one row", () => {
+  const pagePaths = [pagePath, photoPagePath, ocrPagePath, providerPagePath, exportPagePath, bGradePagePath];
+
+  for (const path of pagePaths) {
+    const source = readFileSync(path, "utf8");
+    assert.match(source, /class="filter-form"/, `${path.pathname} should expose a filter form`);
+    assert.match(source, /\.filter-form\s*\{[\s\S]*display:\s*flex/, `${path.pathname} filter form should use flex layout`);
+    assert.match(source, /\.filter-form\s*\{[\s\S]*align-items:\s*center/, `${path.pathname} filter form should vertically align controls`);
+    assert.match(source, /\.filter-form\s*\{[\s\S]*flex-wrap:\s*wrap/, `${path.pathname} filter form should wrap without breaking alignment`);
+    assert.match(source, /\.filter-form\s*:deep\(\.el-form-item\)\s*\{[\s\S]*margin-bottom:\s*0/, `${path.pathname} filter items should not push buttons down`);
+  }
 });

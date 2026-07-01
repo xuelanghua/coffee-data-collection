@@ -5,9 +5,9 @@
 				<div class="panel-header">
 					<span>导出任务</span>
 					<div class="header-actions">
-						<el-button size="small" @click="loadExportJobs">刷新</el-button>
-						<el-button v-permission="'coffee:export:Create'" type="primary" size="small" @click="handleCreateDatasetPackage">创建数据集包</el-button>
-						<el-button v-permission="'coffee:export:Create'" size="small" @click="handleCreateExport">新建导出</el-button>
+						<el-button @click="loadExportJobs">刷新</el-button>
+						<el-button v-permission="'coffee:export:Create'" type="primary" @click="openExportDialog('dataset_package')">创建数据集包</el-button>
+						<el-button v-permission="'coffee:export:Create'" @click="openExportDialog('event_detail')">新建导出</el-button>
 					</div>
 				</div>
 			</template>
@@ -24,7 +24,7 @@
 					</el-select>
 				</el-form-item>
 				<el-form-item label="Event_ID">
-					<el-input v-model.trim="datasetEventId" clearable placeholder="EV202606250501" style="width: 190px" />
+					<el-input v-model.trim="queryForm.event_id" clearable placeholder="EV202606250501" style="width: 190px" />
 				</el-form-item>
 				<el-form-item>
 					<el-button type="primary" @click="handleSearch">查询</el-button>
@@ -63,24 +63,57 @@
 				<el-table-column label="操作" width="150" fixed="right">
 					<template #default="{ row }">
 						<el-button v-if="row.file_path" type="primary" link @click="handleCopyFilePath(row)">复制路径</el-button>
-						<el-button v-permission="'coffee:export:Cancel'" type="warning" link :disabled="!canCancel(row)" @click="handleCancel(row)">取消</el-button>
+						<el-button v-permission="'coffee:export:Cancel'" type="primary" link :disabled="!canCancel(row)" @click="handleCancel(row)">取消</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
 		</el-card>
+
+		<el-dialog v-model="exportDialogVisible" title="导出弹窗" width="560px">
+			<el-alert
+				class="dialog-help"
+				title='过滤条件示例：按审核通过导出可填 {"status":"approved"}；按任务导出可填 {"task_id":"TASK202606250001"}；数据集包只需要 Event_ID。'
+				type="info"
+				:closable="false"
+				show-icon
+			/>
+			<el-form :model="exportForm" label-width="92px">
+				<el-form-item label="导出类型">
+					<el-select v-model="exportForm.export_type">
+						<el-option v-for="item in exportTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+					</el-select>
+				</el-form-item>
+				<el-form-item label="Event_ID" v-if="exportForm.export_type === 'dataset_package'">
+					<el-input v-model.trim="exportForm.event_id" placeholder="EV202606250501" />
+				</el-form-item>
+				<el-form-item label="过滤条件">
+					<el-input v-model="exportFiltersText" type="textarea" :rows="5" placeholder='{"status":"approved"}' />
+				</el-form-item>
+			</el-form>
+			<template #footer>
+				<el-button @click="exportDialogVisible = false">取消</el-button>
+				<el-button type="primary" @click="handleSubmitExport">创建</el-button>
+			</template>
+		</el-dialog>
 	</fs-page>
 </template>
 
 <script lang="ts" setup name="coffeeExport">
 import { onMounted, reactive, ref } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { cancelExportJob, createExportJob, getExportJobs } from '/@/api/coffee/export';
 
 const jobs = ref<any[]>([]);
-const datasetEventId = ref('');
+const exportDialogVisible = ref(false);
+const exportFiltersText = ref('{}');
 const queryForm = reactive({
 	status: '',
 	export_type: '',
+	event_id: '',
+});
+const exportForm = reactive({
+	export_type: 'event_detail',
+	event_id: '',
 });
 
 const exportTypeOptions = [
@@ -143,30 +176,47 @@ async function handleSearch() {
 async function handleReset() {
 	queryForm.status = '';
 	queryForm.export_type = '';
+	queryForm.event_id = '';
 	await loadExportJobs({});
 }
 
-async function handleCreateExport() {
-	await createExportJob({
-		export_type: 'event_detail',
-		filters: {},
-	});
-	await loadExportJobs();
-	ElMessage.success('导出任务已创建');
+function openExportDialog(exportType: string) {
+	exportForm.export_type = exportType;
+	exportForm.event_id = queryForm.event_id;
+	exportFiltersText.value = '{}';
+	exportDialogVisible.value = true;
 }
 
 async function handleCreateDatasetPackage() {
-	if (!datasetEventId.value) {
+	if (!exportForm.event_id) {
 		ElMessage.warning('请输入 Event_ID');
 		return;
 	}
 	await createExportJob({
 		export_type: 'dataset_package',
-		filters: { event_id: datasetEventId.value },
+		filters: { event_id: exportForm.event_id },
 	});
 	queryForm.export_type = 'dataset_package';
 	await loadExportJobs();
 	ElMessage.success('数据集包导出任务已创建');
+}
+
+async function handleCreateExport() {
+	await createExportJob({
+		export_type: exportForm.export_type,
+		filters: JSON.parse(exportFiltersText.value || '{}'),
+	});
+	await loadExportJobs();
+	ElMessage.success('导出任务已创建');
+}
+
+async function handleSubmitExport() {
+	if (exportForm.export_type === 'dataset_package') {
+		await handleCreateDatasetPackage();
+	} else {
+		await handleCreateExport();
+	}
+	exportDialogVisible.value = false;
 }
 
 async function handleCopyFilePath(row: any) {
@@ -175,6 +225,7 @@ async function handleCopyFilePath(row: any) {
 }
 
 async function handleCancel(row: any) {
+	await ElMessageBox.confirm(`确认取消导出任务「${row.job_code}」？`, '取消确认', { type: 'warning' });
 	await cancelExportJob(row.job_code);
 	await loadExportJobs();
 	ElMessage.success('导出任务已取消');
@@ -187,7 +238,7 @@ onMounted(() => {
 
 <style scoped>
 .coffee-export-page {
-	padding: 12px;
+	padding: 20px;
 }
 .panel {
 	border-radius: 6px;
@@ -196,7 +247,7 @@ onMounted(() => {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 12px;
+	gap: 20px;
 }
 .header-actions {
 	display: flex;
@@ -204,6 +255,18 @@ onMounted(() => {
 	gap: 8px;
 }
 .filter-form {
-	margin-bottom: 12px;
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 12px 20px;
+	margin-bottom: 20px;
+}
+.filter-form :deep(.el-form-item) {
+	align-items: center;
+	margin-right: 0;
+	margin-bottom: 0;
+}
+.dialog-help {
+	margin-bottom: 16px;
 }
 </style>

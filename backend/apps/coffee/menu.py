@@ -1,3 +1,10 @@
+"""Coffee menu and role bootstrap helpers for django-vue3-admin.
+
+The project keeps framework authentication, menu, button permission and data
+range mechanisms intact. These helpers only register the coffee business menu
+tree and four business roles into the existing dvadmin system tables.
+"""
+
 from dvadmin.system.models import Menu, MenuButton, Role, RoleMenuButtonPermission, RoleMenuPermission
 
 
@@ -53,6 +60,8 @@ COFFEE_MENU_DEFINITIONS = (
         "buttons": (
             ("查询", "Search", "coffee:provider:Search", "/api/coffee/provider-configs/", 0),
             ("新增配置", "Create", "coffee:provider:Create", "/api/coffee/provider-configs/", 1),
+            ("编辑配置", "Edit", "coffee:provider:Edit", "/api/coffee/provider-configs/{id}/", 1),
+            ("删除配置", "Delete", "coffee:provider:Delete", "/api/coffee/provider-configs/{id}/", 1),
             ("连接测试", "Test", "coffee:provider:Test", "/api/coffee/provider-configs/{id}/test/", 1),
         ),
     },
@@ -92,6 +101,8 @@ COFFEE_MENU_DEFINITIONS = (
         "buttons": (
             ("查询", "Search", "coffee:b-grade:Search", "/api/coffee/b-grade-rules/", 0),
             ("新增规则", "Create", "coffee:b-grade:Create", "/api/coffee/b-grade-rules/", 1),
+            ("编辑规则", "Edit", "coffee:b-grade:Edit", "/api/coffee/b-grade-rules/{rule_code}/", 1),
+            ("删除规则", "Delete", "coffee:b-grade:Delete", "/api/coffee/b-grade-rules/{rule_code}/", 1),
             ("模拟检查", "Check", "coffee:b-grade:Check", "/api/coffee/b-grade-rules/{rule_code}/check/", 1),
         ),
     },
@@ -153,6 +164,7 @@ COFFEE_ROLE_DEFINITIONS = {
 
 
 def ensure_coffee_menus():
+    """Create or update the coffee Web menu tree and button permissions."""
     catalog, _ = Menu.objects.update_or_create(
         web_path="/coffee",
         component_name="",
@@ -206,6 +218,7 @@ def ensure_coffee_menus():
 
 
 def ensure_coffee_role_matrix():
+    """Create coffee roles and bind their menu/button/data-scope permissions."""
     ensure_coffee_menus()
     menus_by_path = {menu.web_path: menu for menu in Menu.objects.filter(web_path__startswith="/coffee")}
     all_button_values = set(MenuButton.objects.filter(menu__web_path__startswith="/coffee").values_list("value", flat=True))

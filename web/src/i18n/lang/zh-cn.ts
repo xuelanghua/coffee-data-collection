@@ -45,7 +45,7 @@ export default {
             quickNavigationTool: '快捷导航工具',
         },
         footer: {
-            copyright: ' ❤️ Powered by DVAdmin Copyright © 巨梦科技·DVAdmin团队 ❤️',
+            copyright: ' ❤️ Powered by Lanying Copyright ©  蘭影科技 ❤️',
         },
         router: {
             home: '首页',

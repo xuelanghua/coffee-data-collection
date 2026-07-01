@@ -1,8 +1,11 @@
+"""Synchronous export-job processors for coffee data packages."""
+
 from apps.coffee.models import CollectionEvent, ExportJob
 from apps.coffee.offline_package import build_event_offline_package
 
 
 def _mark_failed(job, message):
+    """Persist a terminal failure state for an ExportJob."""
     job.status = ExportJob.STATUS_FAILED
     job.progress = 100
     job.error_message = message
@@ -11,6 +14,7 @@ def _mark_failed(job, message):
 
 
 def process_export_job(job, output_root, media_root=None):
+    """Process one export job and update progress/file metadata in-place."""
     job.status = ExportJob.STATUS_RUNNING
     job.progress = 10
     job.error_message = None

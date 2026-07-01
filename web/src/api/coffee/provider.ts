@@ -28,6 +28,29 @@ export function createProviderConfig(data: CoffeeProviderConfigPayload) {
 	});
 }
 
+export function updateProviderConfig(providerId: number, data: CoffeeProviderConfigPayload) {
+	return request({
+		url: `/api/coffee/provider-configs/${providerId}/`,
+		method: 'put',
+		data,
+	});
+}
+
+export function deleteProviderConfig(providerId: number) {
+	return request({
+		url: `/api/coffee/provider-configs/${providerId}/`,
+		method: 'delete',
+	});
+}
+
+export function toggleProviderConfig(providerId: number, enabled: boolean) {
+	return request({
+		url: `/api/coffee/provider-configs/${providerId}/toggle/`,
+		method: 'post',
+		data: { enabled },
+	});
+}
+
 export function testProviderConfig(providerId: number) {
 	return request({
 		url: `/api/coffee/provider-configs/${providerId}/test/`,

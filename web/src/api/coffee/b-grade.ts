@@ -26,6 +26,29 @@ export function createBGradeRule(data: CoffeeBGradeRulePayload) {
 	});
 }
 
+export function updateBGradeRule(ruleCode: string, data: CoffeeBGradeRulePayload) {
+	return request({
+		url: `/api/coffee/b-grade-rules/${ruleCode}/`,
+		method: 'put',
+		data,
+	});
+}
+
+export function deleteBGradeRule(ruleCode: string) {
+	return request({
+		url: `/api/coffee/b-grade-rules/${ruleCode}/`,
+		method: 'delete',
+	});
+}
+
+export function toggleBGradeRule(ruleCode: string, enabled: boolean) {
+	return request({
+		url: `/api/coffee/b-grade-rules/${ruleCode}/toggle/`,
+		method: 'post',
+		data: { enabled },
+	});
+}
+
 export function checkBGradeRule(ruleCode: string) {
 	return request({
 		url: `/api/coffee/b-grade-rules/${ruleCode}/check/`,

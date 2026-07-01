@@ -111,3 +111,48 @@ class CoffeeBGradeRuleApiTests(APITestCase):
         self.assertEqual(result["status"], "fail")
         self.assertEqual(result["actual_count"], 2)
         self.assertEqual(result["blocking"], True)
+
+    def test_b_grade_rule_update_toggle_and_delete_support_web_form_actions(self):
+        create_response = self.client.post(
+            "/api/coffee/b-grade-rules/",
+            {
+                "rule_name": "B级通过数至少1条",
+                "task_id": self.plot.task_code,
+                "metric": "approved_event_count",
+                "min_count": 1,
+                "block_level": "warning",
+                "enabled": True,
+            },
+            format="json",
+        )
+        self.assertEqual(create_response.status_code, 200)
+        rule_code = create_response.data["data"]["rule_code"]
+
+        update_response = self.client.put(
+            f"/api/coffee/b-grade-rules/{rule_code}/",
+            {
+                "rule_name": "B级通过数至少2条",
+                "task_id": self.plot.task_code,
+                "metric": "approved_event_count",
+                "min_count": 2,
+                "max_count": 5,
+                "block_level": "blocking",
+                "enabled": True,
+            },
+            format="json",
+        )
+
+        self.assertEqual(update_response.status_code, 200)
+        updated = update_response.data["data"]
+        self.assertEqual(updated["rule_name"], "B级通过数至少2条")
+        self.assertEqual(updated["min_count"], 2)
+        self.assertEqual(updated["block_level"], "blocking")
+
+        toggle_response = self.client.post(f"/api/coffee/b-grade-rules/{rule_code}/toggle/", {"enabled": False}, format="json")
+        self.assertEqual(toggle_response.status_code, 200)
+        self.assertEqual(toggle_response.data["data"]["enabled"], False)
+
+        delete_response = self.client.delete(f"/api/coffee/b-grade-rules/{rule_code}/")
+        self.assertEqual(delete_response.status_code, 200)
+        list_response = self.client.get("/api/coffee/b-grade-rules/", {"task_id": self.plot.task_code})
+        self.assertEqual(list_response.data["data"]["count"], 0)

@@ -1,3 +1,11 @@
+"""Business ID generator for the four coffee collection primary codes.
+
+The field workflow requires server-side IDs even when the App works offline for
+part of the collection flow. This helper keeps the public ID format consistent
+across Plot_ID, Point_ID, Event_ID and Photo_ID while leaving database primary
+keys internal to Django.
+"""
+
 from datetime import date
 
 from apps.coffee.models import CollectionEvent, PhotoAsset, Plot, Point
@@ -12,6 +20,7 @@ PREFIX_TO_MODEL_FIELD = {
 
 
 def next_business_id(prefix, today=None):
+    """Return the next daily sequence ID for the requested business prefix."""
     if prefix not in PREFIX_TO_MODEL_FIELD:
         raise ValueError(f"Unsupported business id prefix: {prefix}")
     day = (today or date.today()).strftime("%Y%m%d")

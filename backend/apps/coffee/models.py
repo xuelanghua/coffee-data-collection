@@ -1,9 +1,19 @@
+"""Coffee collection domain models.
+
+The coffee module keeps django-vue3-admin's system users, roles and menus, while
+storing field collection data in a separate domain schema. Public business IDs
+such as Plot_ID, Point_ID, Event_ID and Photo_ID are modeled explicitly because
+they are printed, watermarked, exported and used by the App during offline work.
+"""
+
 from django.db import models
 
 from dvadmin.utils.models import CoreModel, table_prefix
 
 
 class Plot(CoreModel):
+    """A coffee planting plot, usually drawn on the App map in the field."""
+
     SOURCE_APP_DRAWN = "app_drawn"
     SOURCE_WEB_CREATED = "web_created"
     SOURCE_IMPORTED = "imported"
@@ -73,6 +83,8 @@ class Plot(CoreModel):
 
 
 class PlotBoundaryVersion(CoreModel):
+    """Historical boundary snapshots used for review, return and adjustment."""
+
     plot = models.ForeignKey(Plot, related_name="boundary_versions", on_delete=models.CASCADE, verbose_name="地块")
     version = models.PositiveIntegerField(verbose_name="版本")
     boundary_geojson = models.JSONField(default=dict, verbose_name="边界GeoJSON")
@@ -90,6 +102,8 @@ class PlotBoundaryVersion(CoreModel):
 
 
 class Point(CoreModel):
+    """A sampling point inside a plot, selected in the field or imported later."""
+
     SOURCE_APP_SELECTED = "app_selected"
     SOURCE_WEB_CREATED = "web_created"
     SOURCE_IMPORTED = "imported"
@@ -129,6 +143,8 @@ class Point(CoreModel):
 
 
 class CollectionEvent(CoreModel):
+    """One field collection session at a plot/point pair."""
+
     STATUS_DRAFT = "draft"
     STATUS_SUBMITTED = "submitted"
     STATUS_REVIEWING = "reviewing"
@@ -163,6 +179,8 @@ class CollectionEvent(CoreModel):
 
 
 class MeasurementRecord(CoreModel):
+    """Device readings captured from OCR or manual correction on the App."""
+
     event = models.ForeignKey(CollectionEvent, related_name="measurements", on_delete=models.CASCADE, verbose_name="采集事件")
     device_no = models.CharField(max_length=64, verbose_name="设备编号")
     measured_at = models.DateTimeField(null=True, blank=True, verbose_name="采集时间")
@@ -189,6 +207,8 @@ class MeasurementRecord(CoreModel):
 
 
 class EventFieldValue(CoreModel):
+    """Versioned event-level field values after OCR/manual correction."""
+
     SOURCE_MANUAL = "manual"
     SOURCE_OCR = "ocr"
     SOURCE_DEVICE = "device"
@@ -227,6 +247,8 @@ class EventFieldValue(CoreModel):
 
 
 class PhotoAsset(CoreModel):
+    """Photo metadata and immutable file references for one collection event."""
+
     CATEGORY_DEVICE_READING = "device_reading"
     CATEGORY_ENVIRONMENT = "environment"
     CATEGORY_PLANT = "plant"
@@ -296,6 +318,8 @@ class PhotoAsset(CoreModel):
 
 
 class PhotoAnnotation(CoreModel):
+    """Manual bounding-box annotations over a photo, stored by version."""
+
     SHAPE_BBOX = "bbox"
     SHAPE_POLYGON = "polygon"
     SHAPE_POINT = "point"
@@ -333,6 +357,8 @@ class PhotoAnnotation(CoreModel):
 
 
 class PhotoUploadChunk(CoreModel):
+    """Chunk manifest for resumable photo uploads from weak networks."""
+
     photo = models.ForeignKey(PhotoAsset, related_name="upload_chunks", on_delete=models.CASCADE, verbose_name="照片")
     upload_session_id = models.CharField(max_length=64, db_index=True, verbose_name="上传会话ID")
     chunk_index = models.PositiveIntegerField(verbose_name="分片序号")
@@ -353,6 +379,8 @@ class PhotoUploadChunk(CoreModel):
 
 
 class OCRResult(CoreModel):
+    """Raw and structured OCR response for one photo/provider call."""
+
     PROVIDER_PADDLE = "paddleocr"
     PROVIDER_HUAWEI = "huawei_ocr"
     PROVIDER_MANUAL = "manual"
@@ -401,6 +429,8 @@ class OCRResult(CoreModel):
 
 
 class OCRCorrection(CoreModel):
+    """Human correction record that preserves the OCR value and final value."""
+
     ocr_result = models.ForeignKey(OCRResult, related_name="corrections", on_delete=models.CASCADE, verbose_name="OCR结果")
     field_name = models.CharField(max_length=64, verbose_name="字段名")
     raw_value = models.CharField(max_length=255, null=True, blank=True, verbose_name="原始值")
@@ -418,6 +448,8 @@ class OCRCorrection(CoreModel):
 
 
 class ProviderCallLog(CoreModel):
+    """Auditable log of external/local Provider calls and their digests."""
+
     STATUS_SUCCESS = "success"
     STATUS_FAILED = "failed"
     STATUS_CHOICES = (
@@ -449,6 +481,8 @@ class ProviderCallLog(CoreModel):
 
 
 class ProviderConfig(CoreModel):
+    """Versioned Provider configuration with secrets stored in config_json."""
+
     TYPE_MAP = "map"
     TYPE_WEATHER = "weather"
     TYPE_OCR = "ocr"
@@ -495,6 +529,8 @@ class ProviderConfig(CoreModel):
 
 
 class ExportJob(CoreModel):
+    """User-created export task shown in the Web management console."""
+
     TYPE_EVENT_DETAIL = "event_detail"
     TYPE_PHOTO_ASSET = "photo_asset"
     TYPE_OCR_CORRECTION = "ocr_correction"
@@ -547,6 +583,8 @@ class ExportJob(CoreModel):
 
 
 class MetricDefinition(CoreModel):
+    """Versioned metric definition used by statistics endpoints."""
+
     GROUP_PROGRESS = "progress"
     GROUP_QUALITY = "quality"
     GROUP_PERFORMANCE = "performance"
@@ -576,6 +614,8 @@ class MetricDefinition(CoreModel):
 
 
 class BGradeRule(CoreModel):
+    """Configurable B-grade count rule for quality checks."""
+
     METRIC_APPROVED_EVENT_COUNT = "approved_event_count"
     METRIC_RETURNED_EVENT_COUNT = "returned_event_count"
     METRIC_SUBMITTED_EVENT_COUNT = "submitted_event_count"
@@ -614,6 +654,8 @@ class BGradeRule(CoreModel):
 
 
 class QualityReview(CoreModel):
+    """Review decision for an event, photo or offline package."""
+
     REVIEW_TYPE_EVENT = "event"
     REVIEW_TYPE_PHOTO = "photo"
     REVIEW_TYPE_CHOICES = (

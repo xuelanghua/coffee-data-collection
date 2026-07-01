@@ -1,3 +1,11 @@
+"""Coffee API views for App collection and Web management.
+
+The view layer is the integration boundary between django-vue3-admin users/
+permissions and the coffee domain models. App endpoints optimize for field
+collection, idempotency and offline upload recovery; Web endpoints optimize for
+review, correction, statistics and export workflows.
+"""
+
 import hashlib
 import json
 import time
@@ -81,6 +89,7 @@ def _collector_id(request):
 
 
 def _event_owner_error(request, event):
+    """Return a 403 response when an App user tries to mutate another event."""
     if event.collector_id == _collector_id(request):
         return None
     return ErrorResponse(msg="无权操作该采集事件", code="COFFEE_EVENT_FORBIDDEN", status=403)
@@ -113,6 +122,7 @@ def _user_role_keys(user):
 
 
 def _apply_event_data_scope(queryset, user):
+    """Apply coffee role-based event visibility without bypassing dvadmin roles."""
     if getattr(user, "is_superuser", False):
         return queryset
     role_keys = _user_role_keys(user)
@@ -140,6 +150,7 @@ def _apply_dept_data_scope(queryset, user):
 
 
 def _create_review(event, *, status, reviewer_id, result_json=None, return_reason=None, return_items=None):
+    """Create a versioned event-level review and move the event status."""
     review = QualityReview.objects.create(
         event=event,
         review_type=QualityReview.REVIEW_TYPE_EVENT,
@@ -157,6 +168,7 @@ def _create_review(event, *, status, reviewer_id, result_json=None, return_reaso
 
 
 def _create_photo_review(photo, *, status, reviewer_id, result_json=None, return_reason=None, return_items=None):
+    """Create a versioned photo review and update the photo review state."""
     review = QualityReview.objects.create(
         event=photo.event,
         review_type=QualityReview.REVIEW_TYPE_PHOTO,
@@ -177,6 +189,8 @@ def _create_photo_review(photo, *, status, reviewer_id, result_json=None, return
 
 
 class CoffeeMobileLoginView(APIView):
+    """Mobile login adapter using dvadmin Users and SimpleJWT tokens."""
+
     permission_classes = []
 
     def post(self, request):
@@ -213,6 +227,7 @@ class CoffeeMobileLoginView(APIView):
 
 
 def _append_submission_records(event, data, *, field_version):
+    """Persist submitted field values and measurement/retake relationships."""
     for field in data.get("field_values") or []:
         EventFieldValue.objects.create(event=event, version=field_version, **field)
 
@@ -239,6 +254,7 @@ def _counts_by(queryset, field_name):
 
 
 def _latest_metric_definitions(metric_group):
+    """Return the latest enabled metric definition per metric code."""
     latest_by_code = {}
     queryset = MetricDefinition.objects.filter(metric_group=metric_group, enabled=True).order_by("metric_code", "-version", "-id")
     for metric in queryset:
@@ -259,6 +275,7 @@ def _b_grade_actual_count(rule):
 
 
 def _check_b_grade_rule(rule):
+    """Evaluate one B-grade rule against current collection-event counts."""
     actual_count = _b_grade_actual_count(rule)
     failed_reasons = []
     if rule.min_count is not None and actual_count < rule.min_count:
@@ -276,6 +293,8 @@ def _check_b_grade_rule(rule):
 
 
 class AppPlotCreateView(APIView):
+    """Create a field-drawn plot and its first boundary version."""
+
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
@@ -316,6 +335,8 @@ class AppPlotCreateView(APIView):
 
 
 class AppPointCreateView(APIView):
+    """Create a sampling point under an existing field plot."""
+
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
@@ -350,6 +371,8 @@ class AppPointCreateView(APIView):
 
 
 class AppEventCreateView(APIView):
+    """Create the App draft collection event before photos and OCR."""
+
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
@@ -384,6 +407,8 @@ class AppEventCreateView(APIView):
 
 
 class AppEventSubmitView(APIView):
+    """Submit an App event manifest with corrected fields and measurements."""
+
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
@@ -421,6 +446,8 @@ class AppEventSubmitView(APIView):
 
 
 class AppEventResubmitView(APIView):
+    """Resubmit an event after Web review returns it for correction."""
+
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
@@ -455,6 +482,8 @@ class AppEventResubmitView(APIView):
 
 
 class AppPhotoInitView(APIView):
+    """Reserve a Photo_ID and upload session before chunked upload starts."""
+
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
@@ -489,6 +518,8 @@ class AppPhotoInitView(APIView):
 
 
 class AppPhotoCompleteView(APIView):
+    """Finalize a photo upload and lock immutable original/watermarked refs."""
+
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
@@ -535,6 +566,8 @@ class AppPhotoCompleteView(APIView):
 
 
 class AppPhotoChunkView(APIView):
+    """Accept one idempotent photo chunk for resumable weak-network upload."""
+
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
@@ -577,6 +610,8 @@ class AppPhotoChunkView(APIView):
 
 
 class AppEventOCRView(APIView):
+    """Run OCR or accept a manual/mock OCR payload for one event photo."""
+
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
@@ -677,6 +712,8 @@ class AppOCRCorrectionView(APIView):
 
 
 class WebEventDetailView(APIView):
+    """Return the Web detail page aggregate for plot, photos, OCR and reviews."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request, event_id):
@@ -889,6 +926,8 @@ class WebOCRCorrectionView(APIView):
 
 
 class WebProviderConfigListCreateView(APIView):
+    """List and create Provider configs, masking secrets in responses."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -931,6 +970,8 @@ class WebProviderConfigListCreateView(APIView):
 
 
 class WebProviderConfigTestView(APIView):
+    """Run a safe local Provider contract test and audit the result."""
+
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
@@ -977,7 +1018,61 @@ class WebProviderConfigTestView(APIView):
         )
 
 
+class WebProviderConfigDetailView(APIView):
+    """Update, toggle and delete provider configs from the Web form dialog."""
+
+    permission_classes = [IsAuthenticated]
+
+    def _get_config(self, provider_id):
+        try:
+            return ProviderConfig.objects.get(id=provider_id)
+        except ProviderConfig.DoesNotExist:
+            return None
+
+    @transaction.atomic
+    def put(self, request, provider_id):
+        config = self._get_config(provider_id)
+        if config is None:
+            return ErrorResponse(msg="Provider 配置不存在", code="COFFEE_PROVIDER_CONFIG_NOT_FOUND", status=404)
+        serializer = ProviderConfigSerializer(data=request.data)
+        if not serializer.is_valid():
+            return _validation_error(serializer)
+        data = serializer.validated_data
+        config.provider_type = data["provider_type"]
+        config.provider_name = data["provider_name"]
+        config.display_name = data["display_name"]
+        config.enabled = data.get("enabled", False)
+        config.priority = data.get("priority", 100)
+        config.timeout_ms = data.get("timeout_ms", 15000)
+        config.rate_limit_per_minute = data.get("rate_limit_per_minute", 60)
+        config.config_json = data.get("config_json") or {}
+        config.secret_fields = data.get("secret_fields") or []
+        config.config_status = ProviderConfig.STATUS_CONFIGURED if config.config_json else ProviderConfig.STATUS_MISSING
+        config.version = config.version + 1
+        config.save()
+        return DetailResponse(data=serialize_provider_config(config), msg="更新 Provider 配置成功")
+
+    @transaction.atomic
+    def post(self, request, provider_id):
+        config = self._get_config(provider_id)
+        if config is None:
+            return ErrorResponse(msg="Provider 配置不存在", code="COFFEE_PROVIDER_CONFIG_NOT_FOUND", status=404)
+        config.enabled = bool(request.data.get("enabled"))
+        config.save(update_fields=["enabled", "update_datetime"])
+        return DetailResponse(data=serialize_provider_config(config), msg="更新 Provider 启用状态成功")
+
+    @transaction.atomic
+    def delete(self, request, provider_id):
+        config = self._get_config(provider_id)
+        if config is None:
+            return ErrorResponse(msg="Provider 配置不存在", code="COFFEE_PROVIDER_CONFIG_NOT_FOUND", status=404)
+        config.delete()
+        return DetailResponse(data={"provider_id": provider_id}, msg="删除 Provider 配置成功")
+
+
 class WebMetricDefinitionListCreateView(APIView):
+    """Manage versioned metric definitions used by statistics endpoints."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -1018,6 +1113,8 @@ class WebMetricDefinitionListCreateView(APIView):
 
 
 class WebStatisticsProgressView(APIView):
+    """Return collection progress metrics within the current user's data scope."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -1036,6 +1133,8 @@ class WebStatisticsProgressView(APIView):
 
 
 class WebStatisticsQualityView(APIView):
+    """Return photo/review quality metrics within the current user's data scope."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -1055,6 +1154,8 @@ class WebStatisticsQualityView(APIView):
 
 
 class WebStatisticsPerformanceView(APIView):
+    """Return collector performance metrics for Web reporting."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -1093,6 +1194,8 @@ class WebStatisticsPerformanceView(APIView):
 
 
 class WebExportJobListCreateView(APIView):
+    """Create and list export jobs; dataset packages enqueue Celery work."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -1132,6 +1235,8 @@ class WebExportJobListCreateView(APIView):
 
 
 class WebExportJobCancelView(APIView):
+    """Cancel queued/running export jobs before they reach a terminal state."""
+
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
@@ -1148,6 +1253,8 @@ class WebExportJobCancelView(APIView):
 
 
 class WebBGradeRuleListCreateView(APIView):
+    """Manage B-grade count rules used by quality checks."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -1195,6 +1302,55 @@ class WebBGradeRuleCheckView(APIView):
         except BGradeRule.DoesNotExist:
             return ErrorResponse(msg="B 级规则不存在", code="COFFEE_B_GRADE_RULE_NOT_FOUND", status=404)
         return DetailResponse(data=_check_b_grade_rule(rule), msg="B 级规则检查完成")
+
+
+class WebBGradeRuleDetailView(APIView):
+    """Update, toggle and delete B-grade rules from the Web rule dialog."""
+
+    permission_classes = [IsAuthenticated]
+
+    def _get_rule(self, rule_code):
+        try:
+            return BGradeRule.objects.get(rule_code=rule_code)
+        except BGradeRule.DoesNotExist:
+            return None
+
+    @transaction.atomic
+    def put(self, request, rule_code):
+        rule = self._get_rule(rule_code)
+        if rule is None:
+            return ErrorResponse(msg="B 级规则不存在", code="COFFEE_B_GRADE_RULE_NOT_FOUND", status=404)
+        serializer = BGradeRuleCreateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return _validation_error(serializer)
+        data = serializer.validated_data
+        rule.rule_name = data["rule_name"]
+        rule.task_code = data["task_code"]
+        rule.metric = data["metric"]
+        rule.min_count = data.get("min_count")
+        rule.max_count = data.get("max_count")
+        rule.block_level = data.get("block_level") or BGradeRule.LEVEL_BLOCKING
+        rule.enabled = data.get("enabled", True)
+        rule.version = rule.version + 1
+        rule.save()
+        return DetailResponse(data=serialize_b_grade_rule(rule), msg="更新 B 级规则成功")
+
+    @transaction.atomic
+    def post(self, request, rule_code):
+        rule = self._get_rule(rule_code)
+        if rule is None:
+            return ErrorResponse(msg="B 级规则不存在", code="COFFEE_B_GRADE_RULE_NOT_FOUND", status=404)
+        rule.enabled = bool(request.data.get("enabled"))
+        rule.save(update_fields=["enabled", "update_datetime"])
+        return DetailResponse(data=serialize_b_grade_rule(rule), msg="更新 B 级规则启用状态成功")
+
+    @transaction.atomic
+    def delete(self, request, rule_code):
+        rule = self._get_rule(rule_code)
+        if rule is None:
+            return ErrorResponse(msg="B 级规则不存在", code="COFFEE_B_GRADE_RULE_NOT_FOUND", status=404)
+        rule.delete()
+        return DetailResponse(data={"rule_code": rule_code}, msg="删除 B 级规则成功")
 
 
 class WebEventReviewApproveView(APIView):

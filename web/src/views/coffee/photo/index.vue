@@ -4,9 +4,28 @@
 			<template #header>
 				<div class="panel-header">
 					<span>照片资产</span>
-					<el-button size="small" @click="loadPhotoList">刷新</el-button>
+					<el-button @click="loadPhotoList">刷新</el-button>
 				</div>
 			</template>
+			<el-form :inline="true" :model="queryForm" class="filter-form" label-width="78px">
+				<el-form-item label="审核状态">
+					<el-select v-model="queryForm.review_status" clearable placeholder="全部" style="width: 130px">
+						<el-option label="待审核" value="pending" />
+						<el-option label="已通过" value="approved" />
+						<el-option label="已退回" value="returned" />
+					</el-select>
+				</el-form-item>
+				<el-form-item label="Event_ID">
+					<el-input v-model.trim="queryForm.event_id" clearable placeholder="EV..." style="width: 160px" />
+				</el-form-item>
+				<el-form-item label="分类">
+					<el-input v-model.trim="queryForm.category" clearable placeholder="device_panel" style="width: 150px" />
+				</el-form-item>
+				<el-form-item>
+					<el-button type="primary" @click="handleSearch">查询</el-button>
+					<el-button @click="handleReset">重置</el-button>
+				</el-form-item>
+			</el-form>
 			<el-table :data="photos" size="small" @row-click="selectPhoto">
 				<el-table-column prop="photo_id" label="Photo_ID" min-width="150" />
 				<el-table-column prop="event_id" label="Event_ID" min-width="150" />
@@ -17,8 +36,8 @@
 				<el-table-column prop="latest_ocr_status" label="OCR" width="100" />
 				<el-table-column label="操作" width="180" fixed="right">
 					<template #default="{ row }">
-						<el-button v-permission="'coffee:photo:Approve'" type="success" link @click.stop="approvePhoto(row)">审核通过</el-button>
-						<el-button v-permission="'coffee:photo:Return'" type="warning" link @click.stop="returnPhoto(row)">退回补拍</el-button>
+						<el-button v-permission="'coffee:photo:Approve'" type="primary" link @click.stop="openReviewDialog(row, 'approved')">审核通过</el-button>
+						<el-button v-permission="'coffee:photo:Return'" type="primary" link @click.stop="openReviewDialog(row, 'returned')">退回补拍</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -88,10 +107,17 @@
 					<el-form-item label="几何">
 						<el-input v-model="annotationGeometryText" type="textarea" :rows="4" placeholder='{"x":10,"y":20,"width":80,"height":64}' />
 					</el-form-item>
+					<el-alert
+						class="dialog-help"
+						title='标注几何示例：{"display_box":{"x":10,"y":20,"width":80,"height":64},"natural_box":{"x":120,"y":240,"width":960,"height":768}}。拖拽框选会自动生成。'
+						type="info"
+						:closable="false"
+						show-icon
+					/>
 					<el-form-item label="备注">
 						<el-input v-model="annotationForm.note" />
 					</el-form-item>
-					<el-button v-permission="'coffee:photo:Annotate'" type="primary" size="small" @click="saveAnnotation">保存标注</el-button>
+					<el-button v-permission="'coffee:photo:Annotate'" type="primary" @click="saveAnnotation">保存标注</el-button>
 				</el-form>
 				<el-table :data="annotations" size="small" class="annotation-table" @row-click="selectAnnotationVersion">
 					<el-table-column prop="annotation_id" label="标注ID" min-width="138" />
@@ -102,16 +128,52 @@
 				</el-table>
 			</template>
 		</el-card>
+		<el-dialog v-model="reviewDialogVisible" title="审核弹窗" width="520px">
+			<el-alert
+				class="dialog-help"
+				title="审核说明示例：照片清晰，水印、定位和 metadata 完整；退回示例：照片模糊或设备面板反光，请补拍。"
+				type="info"
+				:closable="false"
+				show-icon
+			/>
+			<el-form :model="reviewForm" label-width="92px">
+				<el-form-item label="审核状态">
+					<el-radio-group v-model="reviewForm.status">
+						<el-radio-button label="approved">通过</el-radio-button>
+						<el-radio-button label="returned">退回</el-radio-button>
+					</el-radio-group>
+				</el-form-item>
+				<el-form-item label="退回原因" v-if="reviewForm.status === 'returned'">
+					<el-input v-model="reviewForm.return_reason" placeholder="PHOTO_RETAKE_REQUIRED" />
+				</el-form-item>
+				<el-form-item label="退回项" v-if="reviewForm.status === 'returned'">
+					<el-select v-model="reviewForm.return_items" multiple placeholder="请选择">
+						<el-option label="照片质量" value="photo_quality" />
+						<el-option label="水印" value="watermark" />
+						<el-option label="metadata" value="metadata" />
+					</el-select>
+				</el-form-item>
+				<el-form-item label="审核说明">
+					<el-input v-model="reviewForm.review_note" type="textarea" :rows="3" />
+				</el-form-item>
+			</el-form>
+			<template #footer>
+				<el-button @click="reviewDialogVisible = false">取消</el-button>
+				<el-button type="primary" @click="submitPhotoReview">提交</el-button>
+			</template>
+		</el-dialog>
 	</fs-page>
 </template>
 
 <script lang="ts" setup name="coffeePhoto">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { getPhotoAnnotations, getPhotoList, reviewPhoto, savePhotoAnnotation } from '/@/api/coffee/photo';
 
 const photos = ref<any[]>([]);
 const selectedPhoto = ref<any>(null);
+const reviewingPhoto = ref<any>(null);
+const reviewDialogVisible = ref(false);
 const annotations = ref<any[]>([]);
 const annotationGeometryText = ref('{"x":10,"y":20,"width":80,"height":64}');
 const dragStart = ref<{ x: number; y: number } | null>(null);
@@ -128,12 +190,38 @@ const annotationForm = ref({
 	shape_type: 'bbox',
 	note: '',
 });
+const queryForm = reactive({
+	review_status: '',
+	event_id: '',
+	category: '',
+});
+const reviewForm = reactive({
+	status: 'approved' as 'approved' | 'returned',
+	review_note: '照片清晰，水印和 metadata 完整',
+	return_reason: 'PHOTO_RETAKE_REQUIRED',
+	return_items: ['photo_quality'] as string[],
+});
 const annotationBoxes = computed(() => annotations.value.filter((item) => item.shape_type === 'bbox' && item.geometry));
 
-async function loadPhotoList(params: Record<string, any> = {}) {
+async function loadPhotoList(params: Record<string, any> = activeQueryParams()) {
 	const data: any = await getPhotoList(params);
 	photos.value = data?.results || [];
 	return data;
+}
+
+function activeQueryParams() {
+	return Object.fromEntries(Object.entries(queryForm).filter(([, value]) => value));
+}
+
+async function handleSearch() {
+	await loadPhotoList(activeQueryParams());
+}
+
+async function handleReset() {
+	queryForm.review_status = '';
+	queryForm.event_id = '';
+	queryForm.category = '';
+	await loadPhotoList({});
 }
 
 function selectPhoto(row: any) {
@@ -254,10 +342,24 @@ async function saveAnnotation() {
 	ElMessage.success('保存标注版本成功');
 }
 
+function openReviewDialog(row: any, status: 'approved' | 'returned') {
+	reviewingPhoto.value = row;
+	reviewForm.status = status;
+	reviewForm.review_note = status === 'approved' ? '照片清晰，水印和 metadata 完整' : '退回补拍';
+	reviewDialogVisible.value = true;
+}
+
+async function submitPhotoReview() {
+	if (!reviewingPhoto.value) return;
+	if (reviewForm.status === 'approved') await approvePhoto(reviewingPhoto.value);
+	if (reviewForm.status === 'returned') await returnPhoto(reviewingPhoto.value);
+	reviewDialogVisible.value = false;
+}
+
 async function approvePhoto(row: any) {
 	await reviewPhoto(row.photo_id, {
 		status: 'approved',
-		review_note: '照片清晰，水印和 metadata 完整',
+		review_note: reviewForm.review_note,
 	});
 	await loadPhotoList();
 	ElMessage.success('照片审核通过');
@@ -266,9 +368,9 @@ async function approvePhoto(row: any) {
 async function returnPhoto(row: any) {
 	await reviewPhoto(row.photo_id, {
 		status: 'returned',
-		return_reason: 'PHOTO_RETAKE_REQUIRED',
-		return_items: ['photo_quality'],
-		review_note: '退回补拍',
+		return_reason: reviewForm.return_reason,
+		return_items: reviewForm.return_items,
+		review_note: reviewForm.review_note,
 	});
 	await loadPhotoList();
 	ElMessage.success('已退回补拍');
@@ -282,26 +384,47 @@ onMounted(() => {
 <style scoped>
 .coffee-photo-page {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) 360px;
-	gap: 12px;
-	padding: 12px;
+	grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+	align-items: stretch;
+	gap: 20px;
+	padding: 20px;
+	box-sizing: border-box;
+	width: 100%;
 }
 .panel {
+	min-width: 0;
+	height: 100%;
 	border-radius: 6px;
 }
 .panel-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 12px;
+	gap: 20px;
+}
+.filter-form {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 12px 20px;
+	margin-bottom: 20px;
+}
+.filter-form :deep(.el-form-item) {
+	align-items: center;
+	margin-right: 0;
+	margin-bottom: 0;
+}
+.dialog-help {
+	margin-bottom: 16px;
 }
 .side-panel {
 	min-width: 0;
+	min-height: 360px;
 }
 .json-box {
 	max-height: 420px;
 	overflow: auto;
-	margin-top: 12px;
+	margin-top: 20px;
 	padding: 12px;
 	background: #f6f8f7;
 	border: 1px solid #e2e8e4;
@@ -362,5 +485,12 @@ onMounted(() => {
 }
 .annotation-table {
 	margin-top: 12px;
+}
+
+@media (max-width: 640px) {
+	.coffee-photo-page {
+		grid-template-columns: minmax(0, 1fr);
+		padding: 12px;
+	}
 }
 </style>

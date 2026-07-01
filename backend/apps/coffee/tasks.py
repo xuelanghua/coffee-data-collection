@@ -1,3 +1,5 @@
+"""Celery task entry points for long-running coffee background work."""
+
 from pathlib import Path
 
 from django.conf import settings
@@ -8,6 +10,7 @@ from apps.coffee.models import ExportJob
 
 
 def _default_export_root():
+    """Resolve the export output directory from settings with a local fallback."""
     configured_root = getattr(settings, "COFFEE_EXPORT_ROOT", None)
     if configured_root:
         return Path(configured_root)
@@ -15,6 +18,7 @@ def _default_export_root():
 
 
 def _default_media_root():
+    """Resolve the media root used when copying controlled photo files."""
     configured_root = getattr(settings, "MEDIA_ROOT", None)
     if configured_root:
         return Path(configured_root)
@@ -23,6 +27,7 @@ def _default_media_root():
 
 @app.task(name="coffee.run_export_job")
 def run_export_job(job_code, output_root=None, media_root=None):
+    """Run an export job asynchronously and return a compact status payload."""
     try:
         job = ExportJob.objects.get(job_code=job_code)
     except ExportJob.DoesNotExist:

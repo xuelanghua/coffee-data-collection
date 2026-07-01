@@ -1,3 +1,10 @@
+"""Build immutable offline review packages for submitted coffee events.
+
+The Web export flow uses this module to produce a small self-contained package
+with manifest.json, index.html and controlled photo copies. Raw event data still
+stays in the database; the package is a review/export artifact.
+"""
+
 import hashlib
 import html
 import json
@@ -9,17 +16,20 @@ from apps.coffee.serializers import serialize_offline_package_index
 
 
 def _provider_logs_for_event(event):
+    """Collect OCR/provider audit logs that belong to the event photos."""
     photo_ids = list(event.photos.values_list("photo_id", flat=True))
     return list(ProviderCallLog.objects.filter(target_type="photo", target_id__in=photo_ids).order_by("called_at", "id"))
 
 
 def _write_json(path, payload):
+    """Write deterministic JSON so package hashes stay reproducible."""
     text = json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2, default=str)
     path.write_text(text + "\n", encoding="utf-8")
     return text
 
 
 def _render_index_html(manifest):
+    """Render a minimal human-readable offline browser page."""
     package_index = manifest["offline_package_index"]
     resource_counts = package_index.get("resource_counts", {})
     photos = package_index.get("resources", {}).get("photos", [])
@@ -74,6 +84,7 @@ def _render_index_html(manifest):
 
 
 def _copy_controlled_photos(event, package_dir, package_index, media_root):
+    """Copy watermarked/original photos into the package without mutating originals."""
     copied_files = []
     if media_root is None:
         return copied_files
@@ -103,6 +114,7 @@ def _copy_controlled_photos(event, package_dir, package_index, media_root):
 
 
 def build_event_offline_package(event, output_root, media_root=None):
+    """Build the offline package for one collection event and return file metadata."""
     output_root = Path(output_root)
     package_dir = output_root / event.event_id
     package_dir.mkdir(parents=True, exist_ok=True)

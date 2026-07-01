@@ -1,3 +1,11 @@
+"""Request validators and response serializers for the coffee API.
+
+Serializers in this module are deliberately split by caller:
+- App serializers validate field-collection writes from UniApp.
+- Web serializers shape list/detail/review/export payloads for the admin UI.
+- Provider serializers mask secrets before any config reaches the frontend.
+"""
+
 import hashlib
 import json
 
@@ -23,6 +31,8 @@ from apps.coffee.models import (
 
 
 class AppPlotCreateSerializer(serializers.Serializer):
+    """Validate field-drawn plot payloads from the App map workflow."""
+
     task_id = serializers.CharField(max_length=64)
     plot_id = serializers.CharField(max_length=64, required=False, allow_blank=True)
     name = serializers.CharField(max_length=128)
@@ -40,6 +50,8 @@ class AppPlotCreateSerializer(serializers.Serializer):
 
 
 class AppPointCreateSerializer(serializers.Serializer):
+    """Validate sampling point creation inside an existing plot."""
+
     task_id = serializers.CharField(max_length=64)
     plot_id = serializers.CharField(max_length=64)
     point_id = serializers.CharField(max_length=64, required=False, allow_blank=True)
@@ -52,6 +64,8 @@ class AppPointCreateSerializer(serializers.Serializer):
 
 
 class AppEventCreateSerializer(serializers.Serializer):
+    """Validate draft collection-event creation before photos/OCR are uploaded."""
+
     task_id = serializers.CharField(max_length=64)
     plot_id = serializers.CharField(max_length=64)
     point_id = serializers.CharField(max_length=64)
@@ -111,6 +125,8 @@ class AppMeasurementSerializer(serializers.ModelSerializer):
 
 
 class AppEventSubmitSerializer(serializers.Serializer):
+    """Validate the final App manifest, corrected fields and measurements."""
+
     idempotency_key = serializers.CharField(max_length=128)
     manifest = serializers.JSONField(required=False)
     field_values = AppFieldValueSerializer(many=True, required=False)
@@ -206,6 +222,8 @@ class PhotoAnnotationCreateSerializer(serializers.Serializer):
 
 
 class ProviderConfigSerializer(serializers.ModelSerializer):
+    """Validate Provider configuration while allowing later output masking."""
+
     class Meta:
         model = ProviderConfig
         fields = (
@@ -269,6 +287,7 @@ class MetricDefinitionSerializer(serializers.ModelSerializer):
 
 
 def serialize_metric_definition(metric):
+    """Return one metric-definition version for statistics configuration UI."""
     return {
         "metric_code": metric.metric_code,
         "metric_name": metric.metric_name,
@@ -494,6 +513,7 @@ def serialize_provider_call_log(log):
 
 
 def mask_provider_config(config):
+    """Mask sensitive Provider config values before returning them to Web."""
     config_json = config.config_json if isinstance(config.config_json, dict) else {}
     secret_fields = set(config.secret_fields if isinstance(config.secret_fields, list) else [])
     return {
@@ -564,6 +584,7 @@ def serialize_quality_review(review):
 
 
 def serialize_offline_package_index(event, provider_logs):
+    """Build a deterministic index used by event detail and offline packages."""
     photos = list(event.photos.order_by("create_datetime", "id"))
     field_values = list(event.field_values.order_by("field_code", "version", "id"))
     measurements = list(event.measurements.order_by("create_datetime", "id"))
@@ -625,6 +646,7 @@ def serialize_offline_package_index(event, provider_logs):
 
 
 def serialize_event_detail(event, provider_logs):
+    """Return the full Web detail page payload for one collection event."""
     provider_logs = list(provider_logs)
     photos = []
     for photo in event.photos.order_by("create_datetime", "id"):

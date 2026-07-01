@@ -1,3 +1,10 @@
+"""Provider adapters used by the coffee domain.
+
+This module keeps vendor/service details behind a small contract so the domain
+models do not depend on a specific OCR or map vendor. Real provider calls are
+recorded separately through ProviderCallLog in the view layer.
+"""
+
 import json
 import urllib.error
 import urllib.request
@@ -9,6 +16,8 @@ from apps.coffee.models import OCRResult, ProviderConfig
 
 @dataclass
 class OCRProviderResult:
+    """Normalized OCR provider response stored by App/Web OCR flows."""
+
     status: str
     raw_response: dict
     structured_json: dict
@@ -33,6 +42,7 @@ MAP_PROVIDER_CAPABILITIES = {
 
 
 def provider_local_contract(config):
+    """Return the locally testable capability contract for a ProviderConfig."""
     if config.provider_type == ProviderConfig.TYPE_MAP:
         contract = MAP_PROVIDER_CAPABILITIES.get(config.provider_name)
         if not contract:
@@ -63,6 +73,7 @@ def provider_local_contract(config):
 
 
 def _average_confidence(fields):
+    """Calculate an aggregate confidence value across recognized fields."""
     values = [Decimal(str(item["confidence"])) for item in fields if item.get("confidence") is not None]
     if not values:
         return None
@@ -70,6 +81,7 @@ def _average_confidence(fields):
 
 
 def _fields_to_structured_json(fields):
+    """Transform provider field arrays into the event field-value shape."""
     structured = {}
     for item in fields:
         name = item.get("name")
@@ -85,6 +97,7 @@ def _fields_to_structured_json(fields):
 
 
 def _get_enabled_config(provider_name):
+    """Select the highest priority enabled OCR ProviderConfig."""
     return (
         ProviderConfig.objects.filter(
             provider_type=ProviderConfig.TYPE_OCR,
@@ -97,6 +110,7 @@ def _get_enabled_config(provider_name):
 
 
 def call_ocr_provider(*, provider_name, photo):
+    """Call the configured OCR endpoint and normalize its response contract."""
     config = _get_enabled_config(provider_name)
     if not config:
         return OCRProviderResult(

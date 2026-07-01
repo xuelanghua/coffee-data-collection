@@ -458,8 +458,8 @@ requirements:
     priority: P0
     title: Web 业务菜单、列表、图片审核、OCR 校正、配置、统计、绩效和导出
     status: NOT_VERIFIED
-    implementation: backend/apps/coffee/views.py 已实现 Web 采集事件详情聚合 API、事件列表、单条审核、批量审核、照片资产列表、照片审核、OCR 任务列表、OCR 校正 API、Provider 配置和连接测试 API、统计 API、绩效 API 和导出任务 API；web/src/views/coffee/ 已实现采集事件、照片资产、OCR 校正、Provider 配置、统计和导出页面骨架；菜单权限完整人工验收和真实导出文件生成待完成
-    verification: Web lint/build、页面人工测试、导出任务测试。
+    implementation: backend/apps/coffee/views.py 已实现 Web 采集事件详情聚合 API、事件列表、单条审核、批量审核、照片资产列表、照片审核、OCR 任务列表、OCR 校正 API、Provider 配置和连接测试 API、统计 API、绩效 API 和导出任务 API；web/src/views/coffee/ 已实现采集事件、照片资产、OCR 校正、Provider 配置、统计和导出页面骨架；咖啡业务交互按钮已统一使用 django-vue3-admin/Element Plus 基础框架默认尺寸，并通过 primary/default 跟随主题色；Provider、照片资产和 OCR 页面已改为 20px 间距的自适应平铺面板；统计报表和 B 级规则页面上下相邻 panel 已补充显式 20px 垂直间距；采集事件、照片资产、OCR、Provider、导出任务和 B 级规则筛选区已统一为 flex 垂直居中，查询/重置按钮与输入控件同水平线；菜单权限完整人工验收和真实导出文件生成待完成
+    verification: Web 契约测试覆盖咖啡业务按钮不使用固定 small 尺寸、不使用 success/warning/danger 固定语义色，并覆盖 Provider/照片资产/OCR 页面 auto-fit 响应式网格、panel 拉伸铺满和 20px 间距，统计报表/B 级规则上下相邻 panel 显式 20px 垂直间距，以及所有筛选区标签、输入控件和操作按钮 flex 垂直居中，Web build 通过；页面人工测试、导出任务测试待继续。
     evidence:
       - backend/apps/coffee/tests/test_web_event_detail_api.py
       - reports/development/S3-web-event-detail-api.md
@@ -688,7 +688,7 @@ requirements:
     title: Web 照片资产审核和 OCR 校正页面/API
     status: PASS
     implementation: backend/apps/coffee/views.py; backend/apps/coffee/serializers.py; backend/apps/coffee/urls.py; web/src/api/coffee/photo.ts; web/src/api/coffee/ocr.ts; web/src/views/coffee/photo/index.vue; web/src/views/coffee/ocr/index.vue
-    verification: 后端测试覆盖 /api/coffee/photos/ 列表、照片审核通过、照片退回补拍、/api/coffee/ocr/jobs/ 列表和 Web OCR 校正版本追加；Web 契约测试覆盖 photo/ocr API 封装和页面关键字段/按钮；后端 coffee 回归和 Web build 通过。
+    verification: 后端测试覆盖 /api/coffee/photos/ 列表、照片审核通过、照片退回补拍、/api/coffee/ocr/jobs/ 列表和 Web OCR 校正版本追加；Web 契约测试覆盖 photo/ocr API 封装、查询表单、审核弹窗、校正弹窗、关键字段/按钮、配置示例说明、20px 页面间距以及按钮默认尺寸和主题色跟随；后端 coffee 回归和 Web build 通过。
     evidence:
       - backend/apps/coffee/tests/test_web_photo_ocr_api.py
       - web/tests/coffee-web-contract.test.mjs
@@ -699,7 +699,7 @@ requirements:
     title: Web Provider 配置和本地连接测试入口
     status: PASS
     implementation: backend/apps/coffee/models.py; backend/apps/coffee/migrations/0005_providerconfig.py; backend/apps/coffee/serializers.py; backend/apps/coffee/views.py; backend/apps/coffee/urls.py; web/src/api/coffee/provider.ts; web/src/views/coffee/provider/index.vue
-    verification: 后端测试覆盖 Provider 配置创建、列表脱敏展示、连接测试写入 ProviderCallLog；Web 契约测试覆盖 Provider API 封装和页面关键字段/按钮；后端 coffee 回归和 Web build 通过。
+    verification: 后端测试覆盖 Provider 配置创建、列表脱敏展示、编辑、启停、删除和连接测试写入 ProviderCallLog；Web 契约测试覆盖 Provider API 封装、查询表单、配置弹窗、设置密钥、配置示例、编辑、启停、删除、连接测试和 20px 页面间距；后端 coffee 回归和 Web build 通过。
     evidence:
       - backend/apps/coffee/tests/test_provider_config_api.py
       - web/tests/coffee-web-contract.test.mjs
@@ -710,7 +710,7 @@ requirements:
     title: Web 统计、绩效和导出任务 API/Page
     status: PASS
     implementation: backend/apps/coffee/models.py; backend/apps/coffee/migrations/0006_exportjob.py; backend/apps/coffee/serializers.py; backend/apps/coffee/views.py; backend/apps/coffee/urls.py; web/src/api/coffee/statistics.ts; web/src/api/coffee/export.ts; web/src/views/coffee/statistics/index.vue; web/src/views/coffee/export/index.vue
-    verification: 后端测试覆盖采集进度、质量统计、绩效统计、导出任务创建/列表/取消；Web 契约测试覆盖统计和导出 API 封装、导出页面关键字段/按钮、数据集包 Event_ID 创建、任务状态、文件路径、文件 SHA256 和复制路径入口；后端 coffee 回归和 Web build 通过。
+    verification: 后端测试覆盖采集进度、质量统计、绩效统计、导出任务创建/列表/取消；Web 契约测试覆盖统计和导出 API 封装、统计口径弹窗、计算口径示例、导出弹窗、过滤条件示例、数据集包 Event_ID 创建、任务状态、文件路径、文件 SHA256、复制路径入口和 20px 页面间距；后端 coffee 回归和 Web build 通过。
     evidence:
       - backend/apps/coffee/tests/test_statistics_export_api.py
       - web/tests/coffee-web-contract.test.mjs
@@ -722,7 +722,7 @@ requirements:
     title: Web 导出页数据集包任务体验
     status: PASS
     implementation: web/src/views/coffee/export/index.vue; web/src/api/coffee/export.ts; web/tests/coffee-web-contract.test.mjs
-    verification: TDD 契约测试覆盖导出页展示数据集包、Event_ID 输入、创建数据集包、任务状态筛选、文件路径、文件 SHA256、复制路径、取消入口和 coffee:export:Create/Cancel 权限；Web build 通过。真实下载和人工浏览验收未在本项宣称 PASS。
+    verification: TDD 契约测试覆盖导出页展示数据集包、Event_ID 输入、导出弹窗、创建数据集包、任务状态筛选、文件路径、文件 SHA256、复制路径、取消确认入口和 coffee:export:Create/Cancel 权限；Web build 通过。真实下载和人工浏览验收未在本项宣称 PASS。
     evidence:
       - web/src/views/coffee/export/index.vue
       - web/tests/coffee-web-contract.test.mjs
@@ -733,7 +733,7 @@ requirements:
     title: B 级数量规则服务和 Web 配置入口
     status: PASS
     implementation: backend/apps/coffee/models.py; backend/apps/coffee/migrations/0007_bgraderule.py; backend/apps/coffee/serializers.py; backend/apps/coffee/views.py; backend/apps/coffee/urls.py; web/src/api/coffee/b-grade.ts; web/src/views/coffee/b-grade/index.vue
-    verification: 后端测试覆盖 B 级规则创建、列表和按任务统计已审核/已退回/已提交数量的即时校验；Web 契约测试覆盖 B 级规则 API 封装和页面关键字段/按钮；后端 coffee 回归和 Web build 通过。
+    verification: 后端测试覆盖 B 级规则创建、列表、编辑、启停、删除和按任务统计已审核/已退回/已提交数量的即时校验；Web 契约测试覆盖 B 级规则 API 封装、查询表单、规则弹窗、新增、编辑、启停、删除、模拟检查和 20px 页面间距；后端 coffee 回归和 Web build 通过。
     evidence:
       - backend/apps/coffee/tests/test_b_grade_rule_api.py
       - web/tests/coffee-web-contract.test.mjs
@@ -1046,7 +1046,7 @@ requirements:
     priority: P1
     title: 高德、聚合天气、华为 OCR 配置、Mock 和连接测试入口
     status: NOT_VERIFIED
-    implementation: backend/apps/coffee/models.py 已实现 ProviderConfig；backend/apps/coffee/views.py 已实现配置列表/创建和本地连接测试；web/src/views/coffee/provider/index.vue 已实现配置页骨架；真实高德、聚合天气、华为 OCR 配置和连接测试仍待真实 Key
+    implementation: backend/apps/coffee/models.py 已实现 ProviderConfig；backend/apps/coffee/views.py 已实现配置列表、创建、编辑、启停、删除和本地连接测试；web/src/views/coffee/provider/index.vue 已实现配置查询、配置弹窗、设置密钥、编辑、启停、删除和连接测试交互；真实高德、聚合天气、华为 OCR 配置和连接测试仍待真实 Key
     verification: Mock 连接测试；缺真实 Key 时真实验证 BLOCKED。
     evidence:
       - backend/apps/coffee/tests/test_provider_config_api.py
